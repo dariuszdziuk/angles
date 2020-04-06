@@ -69,15 +69,21 @@ const IndexPage = () => {
                 <Box style={{
                     visibility: cameraVisibleFirst ? 'visible' : 'hidden'
                 }}>
-                    <video ref={videoFirst} height={405} width={720} autoPlay={true}>
+                    <video ref={videoFirst} autoPlay={true} style={{
+                        height: useSingleCamera ? '810px' : '405px',
+                        width: useSingleCamera ? '1440px' : '720px'
+                    }}>
                         <source src="/videos/IMG_3751_1.mp4" type="video/mp4" />
                     </video>
                 </Box>
                 <Box style={{
                     visibility: cameraVisibleSecond ? 'visible' : 'hidden',
-                    marginLeft: useSingleCamera ? '-720px' : '0'
+                    marginLeft: useSingleCamera ? '-1440px' : '0'
                 }}>
-                    <video ref={videoSecond} height={405} width={720} autoPlay={true} muted={true}>
+                    <video ref={videoSecond} autoPlay={true} muted={true} style={{
+                        height: useSingleCamera ? '810px' : '405px',
+                        width: useSingleCamera ? '1440px' : '720px'
+                    }}>
                         <source src="/videos/IMG_3751.mp4" type="video/mp4" />
                     </video>
                 </Box>
