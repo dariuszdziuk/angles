@@ -73,7 +73,7 @@ const IndexPage = () => {
                         height: useSingleCamera ? '810px' : '405px',
                         width: useSingleCamera ? '1440px' : '720px'
                     }}>
-                        <source src="/videos/IMG_3751_1.mp4" type="video/mp4" />
+                        <source src="http://d2z9la3znewur2.cloudfront.net/IMG_3751_1.mp4" type="video/mp4" />
                     </video>
                 </Box>
                 <Box style={{
@@ -84,7 +84,7 @@ const IndexPage = () => {
                         height: useSingleCamera ? '810px' : '405px',
                         width: useSingleCamera ? '1440px' : '720px'
                     }}>
-                        <source src="/videos/IMG_3751.mp4" type="video/mp4" />
+                        <source src="http://d2z9la3znewur2.cloudfront.net/IMG_3751.mp4" type="video/mp4" />
                     </video>
                 </Box>
             </Flex>
