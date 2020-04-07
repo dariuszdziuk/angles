@@ -19,6 +19,7 @@ const IndexPage = () => {
     const [currentTimeSecond, setCurrentTimeSecond] = useState(0)
     const [cameraVisibleFirst, setCameraVisibleFirst] = useState(true)
     const [cameraVisibleSecond, setCameraVisibleSecond] = useState(true)
+    const [useMachineLearning, setUseMachineLearning] = useState(false)
     const [useSingleCamera, setUseSingleCamera] = useState(false)
 
     // Refs
@@ -40,6 +41,11 @@ const IndexPage = () => {
 
         videoFirst.current.currentTime = 0
         videoSecond.current.currentTime = 0
+    }
+
+    const enableAI = () => {
+        // Show the Canvas
+        setUseMachineLearning(true)
 
         // Set the model
         console.log('Loading neural network for video', videoFirst.current)
@@ -89,7 +95,6 @@ const IndexPage = () => {
                     }
                 }  
             }
-
         })
     }
 
@@ -121,6 +126,7 @@ const IndexPage = () => {
                 <Button mr={2} onClick={switchToOneCamera}>One Camera / Switch</Button>
                 <Button mr={2} onClick={switchToTwoCameras}>Two Cameras</Button>
                 <Button mr={2} onClick={syncVideos}>Sync videos</Button>
+                <Button mr={2} onClick={enableAI}>Enable AI</Button>
             </Box>
             <Box height={810} width={1440} style={{
                 backgroundColor: 'pink'
@@ -133,7 +139,8 @@ const IndexPage = () => {
                     height: '405px',
                     top: '50px',
                     left: '10px',
-                    zIndex: 1
+                    zIndex: 1,
+                    visibility: useMachineLearning ? 'visible' : 'hidden'
                 }} />
                 <Box style={{
                     visibility: cameraVisibleFirst ? 'visible' : 'hidden',
@@ -148,9 +155,11 @@ const IndexPage = () => {
                         <source src="http://d2z9la3znewur2.cloudfront.net/IMG_3751_1.mp4" type="video/mp4" />
                     </video>
                 </Box>
-                <Box hidden style={{
+                <Box style={{
                     visibility: cameraVisibleSecond ? 'visible' : 'hidden',
-                    marginLeft: useSingleCamera ? '-1440px' : '0'
+                    marginLeft: useSingleCamera ? '-720px' : '0',
+                    position: 'absolute',
+                    left: '730px'
                 }}>
                     <video ref={videoSecond} autoPlay={true} muted={true} style={{
                         height: useSingleCamera ? '810px' : '405px',
