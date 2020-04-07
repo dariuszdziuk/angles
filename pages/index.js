@@ -51,8 +51,14 @@ const IndexPage = () => {
         console.log('Loading neural network for video', videoFirst.current)
 
         let poseNet = ml5.poseNet(videoFirst.current, {
-            maxPoseDetections: 1,
-            detectionType: 'single'
+            architecture: 'MobileNetV1',
+            detectionType: 'single',
+            maxPostDetections: 1,
+            minConfidence: 0.75,
+            // inputResolution: { width: 640, height: 480 },
+            outputStride: 16,
+            multiplier: 0.5,
+            // quantBytes: 4
         }, () => {
             console.log('model loaded')
         })
@@ -71,10 +77,11 @@ const IndexPage = () => {
                 function drawKeypoints(ctx, pose, skeleton) {
                     ctx.clearRect(0, 0, currentCanvas.width, currentCanvas.height)
     
+                    // Draw joints
                     for (let i = 0; i < pose.keypoints.length; i++) {
                         let point = pose.keypoints[i]
     
-                        if (point.score > 0.2) {
+                        if (point.score > 0.75) {
                             ctx.beginPath()
                             ctx.fillStyle = 'white'
                             ctx.ellipse(point.position.x, point.position.y, 4, 4, Math.PI / 4, 0, 2 * Math.PI)
@@ -92,6 +99,21 @@ const IndexPage = () => {
                         ctx.moveTo(from.position.x, from.position.y)
                         ctx.lineTo(to.position.x, to.position.y)
                         ctx.stroke()
+                    }
+
+                    // Draw hands
+                    if (pose.leftWrist) {
+                        ctx.beginPath()
+                        ctx.fillStyle = 'red'
+                        ctx.ellipse(pose.leftWrist.x, pose.leftWrist.y, 8, 8, Math.PI / 4, 0, 2 * Math.PI)
+                        ctx.fill()
+                    }
+
+                    if (pose.rightWrist) {
+                        ctx.beginPath()
+                        ctx.fillStyle = 'red'
+                        ctx.ellipse(pose.rightWrist.x, pose.rightWrist.y, 8, 8, Math.PI / 4, 0, 2 * Math.PI)
+                        ctx.fill()
                     }
                 }  
             }
@@ -152,7 +174,7 @@ const IndexPage = () => {
                         height: useSingleCamera ? '810px' : '405px',
                         width: useSingleCamera ? '1440px' : '720px',
                     }} crossOrigin="anonymous">
-                        <source src="http://d2z9la3znewur2.cloudfront.net/IMG_3751_1.mp4" type="video/mp4" />
+                        <source src="http://d2z9la3znewur2.cloudfront.net/videos/front_cam_bw_sample.mp4" type="video/mp4" />
                     </video>
                 </Box>
                 <Box style={{
