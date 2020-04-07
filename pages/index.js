@@ -45,44 +45,49 @@ const IndexPage = () => {
         console.log('Loading neural network for video', videoFirst.current)
 
         let poseNet = ml5.poseNet(videoFirst.current, {
-            maxPoseDetections: 1
+            maxPoseDetections: 1,
+            detectionType: 'single'
         }, () => {
             console.log('model loaded')
         })
 
+        const currentCanvas = canvas.current
+
         poseNet.on('pose', (poses) => {
             // console.log('got results', poses) 
 
-            let pose = poses[0].pose
-            let skeleton = poses[0].skeleton
-            drawKeypoints(ctx.current, pose, skeleton)
-
-            // Draw on the Canvas
-            function drawKeypoints(ctx, pose, skeleton) {
-                ctx.clearRect(0, 0, canvas.current.width, canvas.current.height)
-
-                for (let i = 0; i < pose.keypoints.length; i++) {
-                    let point = pose.keypoints[i]
-
-                    if (point.score > 0.2) {
-                        ctx.beginPath()
-                        ctx.fillStyle = 'white'
-                        ctx.ellipse(point.position.x, point.position.y, 4, 4, Math.PI / 4, 0, 2 * Math.PI)
-                        ctx.fill()
+            if (poses && poses.length > 0) {
+                let pose = poses[0].pose
+                let skeleton = poses[0].skeleton
+                drawKeypoints(ctx.current, pose, skeleton)
+    
+                // Draw on the Canvas
+                function drawKeypoints(ctx, pose, skeleton) {
+                    ctx.clearRect(0, 0, currentCanvas.width, currentCanvas.height)
+    
+                    for (let i = 0; i < pose.keypoints.length; i++) {
+                        let point = pose.keypoints[i]
+    
+                        if (point.score > 0.2) {
+                            ctx.beginPath()
+                            ctx.fillStyle = 'white'
+                            ctx.ellipse(point.position.x, point.position.y, 4, 4, Math.PI / 4, 0, 2 * Math.PI)
+                            ctx.fill()
+                        }
                     }
-                }
-
-                // Draw skeleton lines
-                for (let si = 0; si < skeleton.length; si++) {
-                    let from = skeleton[si][0]
-                    let to = skeleton[si][1]
-
-                    ctx.beginPath()
-                    ctx.strokeStyle = 'white'
-                    ctx.moveTo(from.position.x, from.position.y)
-                    ctx.lineTo(to.position.x, to.position.y)
-                    ctx.stroke()
-                }
+    
+                    // Draw skeleton lines
+                    for (let si = 0; si < skeleton.length; si++) {
+                        let from = skeleton[si][0]
+                        let to = skeleton[si][1]
+    
+                        ctx.beginPath()
+                        ctx.strokeStyle = 'white'
+                        ctx.moveTo(from.position.x, from.position.y)
+                        ctx.lineTo(to.position.x, to.position.y)
+                        ctx.stroke()
+                    }
+                }  
             }
 
         })
