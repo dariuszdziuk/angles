@@ -54,7 +54,7 @@ const IndexPage = () => {
             architecture: 'MobileNetV1',
             detectionType: 'single',
             maxPostDetections: 1,
-            minConfidence: 0.75,
+            minConfidence: 0.35,
             // inputResolution: { width: 640, height: 480 },
             outputStride: 16,
             multiplier: 0.5,
@@ -173,8 +173,10 @@ const IndexPage = () => {
                     <video ref={videoFirst} autoPlay={true} width="810" height="405" style={{
                         height: useSingleCamera ? '810px' : '405px',
                         width: useSingleCamera ? '1440px' : '720px',
+                        // filter: 'grayscale(100%)'
                     }} crossOrigin="anonymous">
                         <source src="http://d2z9la3znewur2.cloudfront.net/videos/front_cam_bw_sample.mp4" type="video/mp4" />
+                        {/* <source src="http://d2z9la3znewur2.cloudfront.net/IMG_3751_1.mp4" type="video/mp4" /> */}
                     </video>
                 </Box>
                 <Box style={{
@@ -185,7 +187,8 @@ const IndexPage = () => {
                 }}>
                     <video ref={videoSecond} autoPlay={true} muted={true} style={{
                         height: useSingleCamera ? '810px' : '405px',
-                        width: useSingleCamera ? '1440px' : '720px'
+                        width: useSingleCamera ? '1440px' : '720px',
+                        filter: 'grayscale(100%)'
                     }}>
                         <source src="http://d2z9la3znewur2.cloudfront.net/IMG_3751.mp4" type="video/mp4" />
                     </video>
