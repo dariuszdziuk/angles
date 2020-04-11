@@ -78,8 +78,8 @@ const Experience = () => {
         let relativeX = mousePosition.x - videoRect.left
         let relativeY = mousePosition.y - videoRect.top
 
-        let angleX = -(0.5 - (relativeX / videoRect.width)) * 40
-        let angleY = -(0.5 - (relativeY / videoRect.height)) * 40
+        let angleY = -(0.5 - (relativeX / videoRect.width)) * 40
+        let angleX = -(0.5 - (relativeY / videoRect.height)) * 40
 
         let style = 'translateZ(0px) perspective(520px) rotateY(' + (angleY * 0.1) + 'deg) rotateX(' + (angleX * 0.1) + 'deg)'
 
