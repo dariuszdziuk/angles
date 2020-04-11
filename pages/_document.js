@@ -10,8 +10,8 @@ class MyDocument extends Document {
         return (
             <Html>
                 <Head>
-                    <title>Angles 0.1</title>
                     <script src="https://unpkg.com/ml5@0.5.0/dist/ml5.min.js" type="text/javascript"></script>
+                    <link rel="stylesheet" href="https://use.typekit.net/vym1bxk.css"></link>
                 </Head>
                 <body>
                     <Main />

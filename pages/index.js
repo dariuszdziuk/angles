@@ -175,7 +175,7 @@ const IndexPage = () => {
                         width: useSingleCamera ? '1440px' : '720px',
                         // filter: 'grayscale(100%)'
                     }} crossOrigin="anonymous">
-                        <source src="http://d2z9la3znewur2.cloudfront.net/videos/front_cam_bw_sample.mp4" type="video/mp4" />
+                        <source src="http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix.mp4" type="video/mp4" />
                         {/* <source src="http://d2z9la3znewur2.cloudfront.net/IMG_3751_1.mp4" type="video/mp4" /> */}
                     </video>
                 </Box>
