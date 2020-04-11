@@ -49,6 +49,15 @@ const Experience = () => {
     // References to video objects
     const videoFront = useRef(null)
 
+    // Capture video click
+    const onVideoClick = () => {
+        if (videoFront.current.paused) {
+            videoFront.current.play()
+        } else {
+            videoFront.current.pause()
+        }
+    }
+
     // Capture global mouse movement
     const onMouseMove = (e) => {
         setMousePosition({
@@ -59,7 +68,6 @@ const Experience = () => {
 
     // Return transformation params for the video
     const transformationParams = () => {
-        
         // Initially there's no video
         if (videoFront.current == null) {
             return ''
@@ -102,7 +110,7 @@ const Experience = () => {
                 <Flex height='83.4%'>
                     <Box width={1/7}></Box>
                     <Box width={5/7} p={3}>
-                        <video ref={videoFront} width='100%' autoPlay={true} style={{
+                        <video ref={videoFront} onClick={onVideoClick} width='100%' autoPlay={true} style={{
                             boxShadow: '0px 4px 64px rgba(0, 0, 0, 0.25)',
 
                             // Small 3d Transformation
