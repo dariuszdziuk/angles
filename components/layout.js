@@ -25,13 +25,12 @@ const theme = {
         clickable: {
             cursor: 'pointer',
             ':hover': {
-                textDecoration: 'underline'
+                borderBottom: '1px solid #666'
             }
         },
         active: {
             cursor: 'default',
-            fontWeight: '600',
-            textDecoration: 'underline'
+            borderBottom: '1px solid black'
         }
     }
 }
