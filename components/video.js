@@ -12,7 +12,24 @@ const styles = {
 
 // Primary camera
 styles.primary[cameras.front] = {
-    opacity: 0.5
+    position: 'absolute',
+    opacity: 1.0,
+}
+
+styles.primary[cameras.top] = {
+    position: 'absolute',
+    opacity: 0.0
+}
+
+// Secondary camera
+styles.secondary[cameras.front] = {
+    position: 'absolute',
+    opacity: 0.0
+}
+
+styles.secondary[cameras.top] = {
+    position: 'absolute',
+    opacity: 1.0
 }
 
 /**
@@ -38,6 +55,11 @@ const Video = (props) => {
     useEffect(() => {
         videoDom.current.muted = props.muted
     }, [videoDom])
+
+    // Active camera has changed
+    useEffect(() => {
+        setActiveCamera(props.activeCamera)
+    }, [props.activeCamera])
 
     // Playback changed
     useEffect(() => {

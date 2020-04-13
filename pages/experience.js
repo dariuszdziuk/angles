@@ -49,7 +49,7 @@ const Experience = () => {
             
             // Videos section
             videos={
-                <Box>
+                <Box style={{position: 'relative'}}>
                     <Video
                         mousePosition={mousePosition}
                         muted={false}
