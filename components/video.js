@@ -12,14 +12,18 @@ const config = {
         sensitivityY: 4,
         pointX: 0.5,
         pointY: 0.125
-    }
+    },
+    animate: true,
+    tracking: false,
+    duration: 0.35
 }
 
 // Predefined styles
 const styles = {
     shared: {
         position: 'absolute',
-        boxShadow: '0px 4px 64px rgba(0, 0, 0, 0.25)'
+        boxShadow: '0px 4px 64px rgba(0, 0, 0, 0.25)',
+        transition: config.animate ? 'margin '+config.duration+'s ease, width '+config.duration+'s ease, opacity '+config.duration+'s ease' : ''
     },
     primary: {},
     secondary: {}
@@ -27,7 +31,8 @@ const styles = {
 
 // Primary camera
 styles.primary[cameras.front] = {
-    opacity: 1.0
+    opacity: 1.0,
+    zIndex: 1
 }
 
 styles.primary[cameras.top] = {
@@ -46,7 +51,8 @@ styles.secondary[cameras.front] = {
 }
 
 styles.secondary[cameras.top] = {
-    opacity: 1.0
+    opacity: 1.0,
+    zIndex: 1
 }
 
 styles.secondary[cameras.both] = {
@@ -107,7 +113,7 @@ const Video = (props) => {
         let style = props.isPrimary ? styles.primary : styles.secondary
 
         return {...styles.shared, ...style[activeCamera], ...{
-            transform: transformationParams()
+            transform: config.tracking ? transformationParams() : ''
         }} 
     }
 
