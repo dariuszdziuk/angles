@@ -6,7 +6,8 @@ import React, { useRef, useState, useEffect } from 'react'
  */
 const Video = (params) => {
 
-    // TODO -- Create a state for playback
+    // Is playing
+    const [isPlaying, setIsPlaying] = useState(false)
 
     // Mouse coordinates
     const [mousePosition, setMousePosition] = useState(params.mousePosition)
@@ -21,7 +22,9 @@ const Video = (params) => {
 
     // Handle video click
     const handleClick = () => {
-        if (videoDom.current.paused) {
+        setIsPlaying(!isPlaying)
+
+        if (!isPlaying) {
             videoDom.current.play()
         } else {
             videoDom.current.pause()
@@ -49,7 +52,7 @@ const Video = (params) => {
     }
 
     return (
-        <video ref={videoDom} onClick={handleClick} width='100%' autoPlay={true} style={{
+        <video ref={videoDom} onClick={handleClick} width='100%' style={{
             boxShadow: '0px 4px 64px rgba(0, 0, 0, 0.25)',
 
             // 3d movement effect
