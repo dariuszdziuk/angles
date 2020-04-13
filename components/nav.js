@@ -30,7 +30,7 @@ const Nav = (props) => {
     }
 
     return (
-        <Flex width={5/7} p={3} height={1}>
+        <Flex>
             <Flex fontSize={3} mt={4}>
                 <Box variant={getVariant(cameras.front)} onClick={() => {activateMode(cameras.front)}}>Front</Box>
                 <Box variant={getVariant(cameras.top)} onClick={() => {activateMode(cameras.top)}} ml={3}>Top</Box>
