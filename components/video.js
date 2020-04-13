@@ -6,30 +6,44 @@ import { cameras } from '../models/camera'
 
 // Predefined styles
 const styles = {
+    shared: {
+        position: 'absolute'
+    },
     primary: {},
     secondary: {}
 }
 
+// Shared style
+styles
+
 // Primary camera
 styles.primary[cameras.front] = {
-    position: 'absolute',
-    opacity: 1.0,
+    opacity: 1.0
 }
 
 styles.primary[cameras.top] = {
-    position: 'absolute',
     opacity: 0.0
+}
+
+styles.primary[cameras.both] = {
+    width: '75%',
+    marginTop: '5%',
+    marginLeft: '-25%'
 }
 
 // Secondary camera
 styles.secondary[cameras.front] = {
-    position: 'absolute',
     opacity: 0.0
 }
 
 styles.secondary[cameras.top] = {
-    position: 'absolute',
     opacity: 1.0
+}
+
+styles.secondary[cameras.both] = {
+    width: '75%',
+    marginTop: '5%',
+    marginLeft: '50%'
 }
 
 /**
@@ -75,7 +89,7 @@ const Video = (props) => {
     const getStyle = () => {
         let style = props.isPrimary ? styles.primary : styles.secondary
 
-        return {...style[activeCamera], ...{
+        return {...styles.shared, ...style[activeCamera], ...{
             boxshadow: '0px 4px 64px rgba(0, 0, 0, 0.25)',
             transform: transformationParams()
         }} 
