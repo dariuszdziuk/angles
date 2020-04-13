@@ -14,7 +14,7 @@ const config = {
         pointY: 0.125
     },
     animate: true,
-    tracking: false,
+    tracking: true,
     duration: 0.35
 }
 
@@ -23,7 +23,7 @@ const styles = {
     shared: {
         position: 'absolute',
         boxShadow: '0px 4px 64px rgba(0, 0, 0, 0.25)',
-        transition: config.animate ? 'margin '+config.duration+'s ease, width '+config.duration+'s ease, opacity '+config.duration+'s ease' : ''
+        transition: config.animate ? 'margin '+config.duration+'s ease, width '+config.duration+'s ease' : '' // , opacity '+config.duration+'s ease' : ''
     },
     primary: {},
     secondary: {}

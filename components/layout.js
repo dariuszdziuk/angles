@@ -11,10 +11,11 @@ import {
 const theme = {
     fonts: {
         body: 'neue-haas-grotesk-text, sans-serif'
+        // body: 'Helvetica'
         // body: 'system-ui'
     },
     fontSizes: [
-        11, 14, 16, 20, 24
+        12, 14, 16, 20, 24
     ],
     styles: {
         root: {
