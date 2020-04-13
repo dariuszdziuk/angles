@@ -32,14 +32,14 @@ const Nav = (props) => {
     return (
         <Flex>
             <Flex fontSize={3} mt={4}>
-                <Box variant={getVariant(cameras.front)} onClick={() => {activateMode(cameras.front)}}>Front</Box>
-                <Box variant={getVariant(cameras.top)} onClick={() => {activateMode(cameras.top)}} ml={3}>Top</Box>
-                <Box variant={getVariant(cameras.both)} onClick={() => {activateMode(cameras.both)}} ml={3}>Both</Box>
-                <Box variant={getVariant(cameras.ai)} onClick={() => {activateMode(cameras.ai)}} ml={3}>AI—Detect</Box>
+                <Box variant={getVariant(cameras.front)} onClick={() => {activateMode(cameras.front)}}>cam—1</Box>
+                <Box variant={getVariant(cameras.top)} onClick={() => {activateMode(cameras.top)}} ml={4}>cam—2</Box>
+                <Box variant={getVariant(cameras.both)} onClick={() => {activateMode(cameras.both)}} ml={4}>both</Box>
+                <Box variant={getVariant(cameras.ai)} onClick={() => {activateMode(cameras.ai)}} ml={4}>AI</Box>
             </Flex>
             <Flex fontSize={3} mt={4} ml={'auto'}>
-                <Box variant='styles.clickable' mr={3}>Tracklist</Box>
-                <Box variant='styles.clickable'>About</Box>
+                <Box variant='styles.clickable' mr={4}>setlist</Box>
+                <Box variant='styles.clickable'>about</Box>
             </Flex>
         </Flex>
     )

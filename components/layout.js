@@ -10,11 +10,11 @@ import {
 // Custom theme
 const theme = {
     fonts: {
-        body: 'neue-haas-grotesk-display, sans-serif'
+        body: 'neue-haas-grotesk-text, sans-serif'
         // body: 'system-ui'
     },
     fontSizes: [
-        12, 14, 16, 20, 24
+        11, 14, 16, 20, 24
     ],
     styles: {
         root: {
