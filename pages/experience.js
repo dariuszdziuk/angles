@@ -9,7 +9,9 @@ import {
     Text
 } from 'rebass'
 
-// Use font: font-family: neue-haas-grotesk-text, sans-serif;
+// Components
+import Nav from '../components/nav'
+import Video from '../components/video'
 
 // Custom theme
 const theme = {
@@ -49,41 +51,12 @@ const Experience = () => {
     // References to video objects
     const videoFront = useRef(null)
 
-    // Capture video click
-    const onVideoClick = () => {
-        if (videoFront.current.paused) {
-            videoFront.current.play()
-        } else {
-            videoFront.current.pause()
-        }
-    }
-
     // Capture global mouse movement
     const onMouseMove = (e) => {
         setMousePosition({
             x: e.pageX,
             y: e.pageY
         })
-    }
-
-    // Return transformation params for the video
-    const transformationParams = () => {
-        // Initially there's no video
-        if (videoFront.current == null) {
-            return ''
-        }
-
-        let videoRect = videoFront.current.getBoundingClientRect()
-
-        let relativeX = mousePosition.x - videoRect.left
-        let relativeY = mousePosition.y - videoRect.top
-
-        let angleY = -(0.5 - (relativeX / videoRect.width)) * 40
-        let angleX = -(0.5 - (relativeY / videoRect.height)) * 40
-
-        let style = 'translateZ(0px) perspective(520px) rotateY(' + (angleY * 0.1) + 'deg) rotateX(' + (angleX * 0.1) + 'deg)'
-
-        return style
     }
 
     // React component
@@ -93,31 +66,13 @@ const Experience = () => {
             <Flex flexDirection='column' backgroundColor='#979797' variant='styles.root' onMouseMove={onMouseMove}>
                 <Flex height='16.6%'>
                     <Box width={1/7}></Box>
-                    <Flex width={5/7} p={3} height={1}>
-                        <Flex fontSize={3} mt={4}>
-                            <Box variant='styles.active'>Front</Box>
-                            <Box variant='styles.clickable' ml={3}>Top</Box>
-                            <Box variant='styles.clickable' ml={3}>Both</Box>
-                            <Box variant='styles.clickable' ml={3}>AI—Detect</Box>
-                        </Flex>
-                        <Flex fontSize={3} mt={4} ml={'auto'}>
-                            <Box variant='styles.clickable' mr={3}>Tracklist</Box>
-                            <Box variant='styles.clickable'>About</Box>
-                        </Flex>
-                    </Flex>
+                    <Nav width={5/7} p={3} height={1} />
                     <Box width={1/7}></Box>
                 </Flex>
                 <Flex height='83.4%'>
                     <Box width={1/7}></Box>
                     <Box width={5/7} p={3}>
-                        <video ref={videoFront} onClick={onVideoClick} width='100%' autoPlay={true} style={{
-                            boxShadow: '0px 4px 64px rgba(0, 0, 0, 0.25)',
-
-                            // Small 3d Transformation
-                            transform: transformationParams()
-                        }}>
-                            <source src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix.mp4' type='video/mp4' />
-                        </video>
+                        <Video mousePosition={mousePosition} src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix.mp4' />
                     </Box>
                     <Box width={1/7}></Box>
                 </Flex>
