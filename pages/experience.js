@@ -3,8 +3,9 @@ import React, { useState, useRef } from 'react'
 
 // Components
 import Layout from '../components/layout'
-import Nav, { cameras } from '../components/nav'
+import Nav from '../components/nav'
 import Video from '../components/video'
+import { cameras } from '../models/camera'
 
 // Rebass components
 import {
@@ -36,10 +37,15 @@ const Experience = () => {
         setIsPlaying(!isPlaying)
     }
 
+    // Handle camera change
+    const handleActiveCameraChange = (camera) => {
+        setActiveCamera(camera)
+    }
+
     // Element
     return (
         <Layout onMouseMove={handleMouseMove}
-            nav={<Nav />}
+            nav={<Nav activeCamera={activeCamera} onActiveCameraChange={handleActiveCameraChange} />}
             
             // Videos section
             videos={
@@ -50,6 +56,7 @@ const Experience = () => {
                         isPrimary={true}
                         isPlaying={isPlaying}
                         onClick={handleVideoClick}
+                        activeCamera={activeCamera}
                         src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix.mp4'
                     />
                     <Video
@@ -58,6 +65,7 @@ const Experience = () => {
                         isPrimary={false}
                         isPlaying={isPlaying}
                         onClick={handleVideoClick}
+                        activeCamera={activeCamera}
                         src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix_1.mp4'
                     />
                 </Box>

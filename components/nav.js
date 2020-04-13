@@ -1,35 +1,32 @@
 // React
 import React, { useState } from 'react'
 
+// Components
+import { cameras } from '../models/camera'
+
 // Rebase
 import {
     Flex,
     Box
 } from 'rebass'
 
-export const cameras = {
-    front: 'front',
-    top: 'top',
-    both: 'both',
-    ai: 'ai'
-}
-
 /**
  * Navigation component
  */
-const Nav = () => {
+const Nav = (props) => {
 
     // Active camera mode
-    const [activeCameraMode, setActiveCameraMode] = useState(cameras.front)
+    const [activeCamera, setActiveCamera] = useState(props.activeCamera)
 
     // Return style variant for specified mode
-    const getVariant = (cameraMode) => {
-        return (cameraMode == activeCameraMode) ? 'styles.active' : 'styles.clickable'
+    const getVariant = (camera) => {
+        return (camera == activeCamera) ? 'styles.active' : 'styles.clickable'
     }
 
-    // Active a camera mode
-    const activateMode = (cameraMode) => {
-        setActiveCameraMode(cameraMode)
+    // Switch camera modes
+    const activateMode = (camera) => {
+        setActiveCamera(camera)
+        props.onActiveCameraChange(camera)
     }
 
     return (

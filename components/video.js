@@ -1,13 +1,27 @@
 // React
 import React, { useRef, useState, useEffect } from 'react'
 
+// Components
+import { cameras } from '../models/camera'
+
+// Predefined styles
+const styles = {
+    primary: {},
+    secondary: {}
+}
+
+// Primary camera
+styles.primary[cameras.front] = {
+    opacity: 0.5
+}
+
 /**
  * Video component
  */
 const Video = (props) => {
 
-    // // Is playing
-    // const [isPlaying, setIsPlaying] = useState(props.isPlaying)
+    // Active camera
+    const [activeCamera, setActiveCamera] = useState(props.activeCamera)
 
     // Mouse coordinates
     const [mousePosition, setMousePosition] = useState(props.mousePosition)
@@ -35,16 +49,15 @@ const Video = (props) => {
         }
     }, [props.isPlaying])
 
-    // // Handle video click
-    // const handleClick = () => {
-    //     setIsPlaying(!isPlaying)
+    // Returns style based on the state
+    const getStyle = () => {
+        let style = props.isPrimary ? styles.primary : styles.secondary
 
-    //     if (!isPlaying) {
-    //         videoDom.current.play()
-    //     } else {
-    //         videoDom.current.pause()
-    //     }
-    // }
+        return {...style[activeCamera], ...{
+            boxshadow: '0px 4px 64px rgba(0, 0, 0, 0.25)',
+            transform: transformationParams()
+        }} 
+    }
 
     // Return transformation params for the video
     const transformationParams = () => {
@@ -67,10 +80,12 @@ const Video = (props) => {
     }
 
     return (
-        <video ref={videoDom} onClick={props.onClick} width='100%' style={{
-            boxShadow: '0px 4px 64px rgba(0, 0, 0, 0.25)',
-            transform: transformationParams()
-        }}>
+        <video
+            ref={videoDom}
+            onClick={props.onClick}
+            width='100%'
+            style={getStyle()}
+        >
             <source src={props.src} type='video/mp4' />
         </video>
     )
