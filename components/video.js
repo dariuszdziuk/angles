@@ -13,9 +13,6 @@ const styles = {
     secondary: {}
 }
 
-// Shared style
-styles
-
 // Primary camera
 styles.primary[cameras.front] = {
     opacity: 1.0
@@ -85,6 +82,14 @@ const Video = (props) => {
         }
     }, [props.isPlaying])
 
+    // Handles video clicking
+    const handleVideoClick = (e) => {
+        props.onClick(e)
+
+        // Hack: Need to play here due to Safari Audio playback restriction (can't play outside of event handler)
+        videoDom.current.play()
+    }
+
     // Returns style based on the state
     const getStyle = () => {
         let style = props.isPrimary ? styles.primary : styles.secondary
@@ -118,7 +123,7 @@ const Video = (props) => {
     return (
         <video
             ref={videoDom}
-            onClick={props.onClick}
+            onClick={handleVideoClick}
             width='100%'
             style={getStyle()}
         >
