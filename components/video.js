@@ -4,32 +4,47 @@ import React, { useRef, useState, useEffect } from 'react'
 /**
  * Video component
  */
-const Video = (params) => {
+const Video = (props) => {
 
-    // Is playing
-    const [isPlaying, setIsPlaying] = useState(false)
+    // // Is playing
+    // const [isPlaying, setIsPlaying] = useState(props.isPlaying)
 
     // Mouse coordinates
-    const [mousePosition, setMousePosition] = useState(params.mousePosition)
+    const [mousePosition, setMousePosition] = useState(props.mousePosition)
 
     // Video element
     const videoDom = useRef(null)
 
     // Listen to mouse position changes
     useEffect(() => {
-        setMousePosition(params.mousePosition)
-    }, [params.mousePosition])
+        setMousePosition(props.mousePosition)
+    }, [props.mousePosition])
 
-    // Handle video click
-    const handleClick = () => {
-        setIsPlaying(!isPlaying)
+    // Video element is loaded
+    useEffect(() => {
+        videoDom.current.muted = props.muted
+    }, [videoDom])
 
-        if (!isPlaying) {
+    // Playback changed
+    useEffect(() => {
+        if (props.isPlaying) {
             videoDom.current.play()
-        } else {
+        }
+        else {
             videoDom.current.pause()
         }
-    }
+    }, [props.isPlaying])
+
+    // // Handle video click
+    // const handleClick = () => {
+    //     setIsPlaying(!isPlaying)
+
+    //     if (!isPlaying) {
+    //         videoDom.current.play()
+    //     } else {
+    //         videoDom.current.pause()
+    //     }
+    // }
 
     // Return transformation params for the video
     const transformationParams = () => {
@@ -52,13 +67,11 @@ const Video = (params) => {
     }
 
     return (
-        <video ref={videoDom} onClick={handleClick} width='100%' style={{
+        <video ref={videoDom} onClick={props.onClick} width='100%' style={{
             boxShadow: '0px 4px 64px rgba(0, 0, 0, 0.25)',
-
-            // 3d movement effect
             transform: transformationParams()
         }}>
-            <source src={params.src} type='video/mp4' />
+            <source src={props.src} type='video/mp4' />
         </video>
     )
 }

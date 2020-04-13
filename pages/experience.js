@@ -6,6 +6,11 @@ import Layout from '../components/layout'
 import Nav, { cameras } from '../components/nav'
 import Video from '../components/video'
 
+// Rebass components
+import {
+    Box
+} from 'rebass'
+
 // Main experience component
 const Experience = () => {
 
@@ -15,8 +20,8 @@ const Experience = () => {
     // Active camera
     const [activeCamera, setActiveCamera] = useState(cameras.front)
 
-    // References to video objects
-    const videoFront = useRef(null)
+    // Playback state
+    const [isPlaying, setIsPlaying] = useState(false)
 
     // Capture global mouse movement
     const handleMouseMove = (e) => {
@@ -26,11 +31,37 @@ const Experience = () => {
         })
     }
 
-    // React component
+    // Handle video click
+    const handleVideoClick = () => {
+        setIsPlaying(!isPlaying)
+    }
+
+    // Element
     return (
         <Layout onMouseMove={handleMouseMove}
             nav={<Nav />}
-            videos={<Video mousePosition={mousePosition} src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix.mp4' />}
+            
+            // Videos section
+            videos={
+                <Box>
+                    <Video
+                        mousePosition={mousePosition}
+                        muted={false}
+                        isPrimary={true}
+                        isPlaying={isPlaying}
+                        onClick={handleVideoClick}
+                        src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix.mp4'
+                    />
+                    <Video
+                        mousePosition={mousePosition}
+                        muted={true}
+                        isPrimary={false}
+                        isPlaying={isPlaying}
+                        onClick={handleVideoClick}
+                        src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix_1.mp4'
+                    />
+                </Box>
+            }
         />
     )
 }
