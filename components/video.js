@@ -4,10 +4,22 @@ import React, { useRef, useState, useEffect } from 'react'
 // Components
 import { cameras } from '../models/camera'
 
+// Experience configuration
+const config = {
+    hover3d: {
+        perspective: 512,
+        sensitivityX: 2,
+        sensitivityY: 4,
+        pointX: 0.5,
+        pointY: 0.125
+    }
+}
+
 // Predefined styles
 const styles = {
     shared: {
-        position: 'absolute'
+        position: 'absolute',
+        boxShadow: '0px 4px 64px rgba(0, 0, 0, 0.25)'
     },
     primary: {},
     secondary: {}
@@ -95,7 +107,6 @@ const Video = (props) => {
         let style = props.isPrimary ? styles.primary : styles.secondary
 
         return {...styles.shared, ...style[activeCamera], ...{
-            boxshadow: '0px 4px 64px rgba(0, 0, 0, 0.25)',
             transform: transformationParams()
         }} 
     }
@@ -112,10 +123,10 @@ const Video = (props) => {
         let relativeX = mousePosition.x - videoRect.left
         let relativeY = mousePosition.y - videoRect.top
 
-        let angleY = -(0.5 - (relativeX / videoRect.width)) * 40
-        let angleX = -(0.5 - (relativeY / videoRect.height)) * 40
+        let angleY = -(config.hover3d.pointX - (relativeX / videoRect.width))
+        let angleX = (config.hover3d.pointY - (relativeY / videoRect.height))
 
-        let style = 'translateZ(0px) perspective(520px) rotateY(' + (angleY * 0.1) + 'deg) rotateX(' + (angleX * 0.1) + 'deg)'
+        let style = 'translateZ(0px) perspective(' + config.hover3d.perspective + 'px) rotateY(' + (angleY * config.hover3d.sensitivityY) + 'deg) rotateX(' + (angleX * config.hover3d.sensitivityX) + 'deg)'
 
         return style
     }
