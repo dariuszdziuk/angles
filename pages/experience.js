@@ -57,7 +57,7 @@ const Experience = () => {
                         isPlaying={isPlaying}
                         onClick={handleVideoClick}
                         activeCamera={activeCamera}
-                        src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix.mp4'
+                        src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix+-+Camera+1+Full+Length+720p.mp4'
                     />
                     <Video
                         mousePosition={mousePosition}
@@ -66,7 +66,7 @@ const Experience = () => {
                         isPlaying={isPlaying}
                         onClick={handleVideoClick}
                         activeCamera={activeCamera}
-                        src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix_1.mp4'
+                        src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix+-+Camera+2+Full+Length+720p.mp4'
                     />
                 </Box>
             }
