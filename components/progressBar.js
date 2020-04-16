@@ -19,6 +19,7 @@ const ProgressBar = (props) => {
     // Display states
     const [isIdle, setIsIdle] = useState(true)
     const [isHovered, setIsHovered] = useState(false)
+    const [positionWasSetManually, setPositionWasSetManually] = useState(false)
 
     // Playback state
     const [playbackInfo, setPlaybackInfo] = useState(props.playbackInfo)
@@ -37,6 +38,7 @@ const ProgressBar = (props) => {
 
     // Listen to playback position changes
     useEffect(() => {
+        setPositionWasSetManually(false)
         setPlaybackInfo(props.playbackInfo)
     }, [props.playbackInfo])
 
@@ -62,6 +64,13 @@ const ProgressBar = (props) => {
         
         // Emit new position
         props.onPositionChange(newCurrentTime)
+        
+        // Set the new position locally so the UI feels faster
+        // Also set the opactiy lower to indicate loading state
+        setPositionWasSetManually(true)
+        setPlaybackInfo({...playbackInfo,
+            currentTime: newCurrentTime 
+        })
     }
 
     // Calculate playback position
@@ -111,7 +120,7 @@ const ProgressBar = (props) => {
                     marginLeft: getPlaybackPosition() + '%',
 
                     // Transition
-                    opacity: isHovered ? '100%' : '0%',
+                    opacity: isHovered ? (positionWasSetManually ? '50%' : '100%') : '0%',
                     transition: 'opacity 0.2s ease',
 
                     // Look 
