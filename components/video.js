@@ -75,10 +75,20 @@ const Video = (props) => {
     // Video element
     const videoDom = useRef(null)
 
+    // Playback position timer (only for primary video)
+    const currentTimeTimer = useRef(null)
+
     // Listen to mouse position changes
     useEffect(() => {
         setMousePosition(props.mousePosition)
     }, [props.mousePosition])
+
+    // Listen to new video position signal
+    useEffect(() => {
+        if (props.moveToTimeSignal != 0 ){
+            videoDom.current.currentTime = props.moveToTimeSignal
+        }
+    }, [props.moveToTimeSignal])
 
     // Video element is loaded
     useEffect(() => {
@@ -94,9 +104,22 @@ const Video = (props) => {
     useEffect(() => {
         if (props.isPlaying) {
             videoDom.current.play()
+
+            // Start the position timer if primary
+            if (props.isPrimary) {
+                currentTimeTimer.current = setInterval(() => {
+                    props.onCurrentTimeChange({
+                        currentTime: videoDom.current.currentTime,
+                        duration: videoDom.current.duration
+                    })
+                }, 1000)
+            }
         }
         else {
             videoDom.current.pause()
+
+            // Stop the position timer if primary
+            clearTimeout(currentTimeTimer.current)
         }
     }, [props.isPlaying])
 

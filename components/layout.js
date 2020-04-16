@@ -46,18 +46,19 @@ const Layout = (props) => {
             {/* The main layout */}
             <Flex flexDirection='column' backgroundColor='#979797' variant='styles.root' onMouseMove={props.onMouseMove}>
                 <Flex height='16.6%'>
-                    <Box width={1/7}></Box>
-                    <Box width={5/7} p={3} height={1}>
+                    <Box width={1/6}></Box>
+                    <Box width={4/6} p={3} height={1}>
                         {props.nav}
                     </Box>
-                    <Box width={1/7}></Box>
+                    <Box width={1/6}></Box>
                 </Flex>
                 <Flex height='83.4%'>
-                    <Box width={1/7}></Box>
-                    <Box width={5/7} p={3}>
+                    <Box width={1/6}></Box>
+                    <Box width={4/6} p={3} style={{position: 'relative'}}>
                         {props.videos}
+                        {props.progressBar}
                     </Box>
-                    <Box width={1/7}></Box>
+                    <Box width={1/6}></Box>
                 </Flex>
             </Flex>
 
