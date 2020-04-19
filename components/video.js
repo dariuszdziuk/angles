@@ -3,6 +3,7 @@ import React, { useRef, useState, useEffect } from 'react'
 
 // Components
 import { cameras } from '../models/camera'
+import MotionLayer from './motionLayer'
 
 // Experience configuration
 const config = {
@@ -14,7 +15,7 @@ const config = {
         pointY: 0.125
     },
     animate: true,
-    tracking: true,
+    tracking: false,
     duration: 0.35
 }
 
@@ -161,14 +162,21 @@ const Video = (props) => {
     }
 
     return (
-        <video
-            ref={videoDom}
-            onClick={handleVideoClick}
-            width='100%'
-            style={getStyle()}
-        >
-            <source src={props.src} type='video/mp4' />
-        </video>
+        <>
+            <video
+                ref={videoDom}
+                onClick={handleVideoClick}
+                width='100%'
+                style={getStyle()}
+            >
+                <source src={props.src} type='video/mp4' />
+            </video>
+
+            {/* Motion Layer if video is primary */}
+            {props.isPrimary &&
+                <MotionLayer isActive={activeCamera == cameras.ai}  />
+            }
+        </>
     )
 }
 
