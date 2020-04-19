@@ -19,13 +19,19 @@ const ProgressBar = (props) => {
     // Display states
     const [isIdle, setIsIdle] = useState(true)
     const [isHovered, setIsHovered] = useState(false)
+
+    // Interaction states
     const [positionWasSetManually, setPositionWasSetManually] = useState(false)
+    const [isMouseDown, setIsMouseDown] = useState(false)
 
     // Playback state
     const [playbackInfo, setPlaybackInfo] = useState(props.playbackInfo)
 
     // Idle timer
     const idleTimer = useRef(null)
+
+    // DOM elements to refer
+    const progressBarRef = useRef()
 
     // Listen to mouse position changes
     useEffect(() => {
@@ -50,12 +56,13 @@ const ProgressBar = (props) => {
     // Mouse left
     const handleMouseLeave = () => {
         setIsHovered(false)
+        setIsMouseDown(false)
     }
 
-    // Mouse down
-    const handleMouseDown = (event) => {
+    // Changes the playback position based on mouse pointer
+    const changePosition = (event) => {
         // Progress bar bounds
-        const rect = event.target.getBoundingClientRect()
+        const rect = progressBarRef.current.getBoundingClientRect()
 
         // Calculate
         let x = event.clientX - rect.left
@@ -71,6 +78,27 @@ const ProgressBar = (props) => {
         setPlaybackInfo({...playbackInfo,
             currentTime: newCurrentTime 
         })
+
+        // Disable further handling
+        event.preventDefault()
+    }
+
+    // Mouse down
+    const handleMouseDown = (event) => {
+        setIsMouseDown(true)
+        changePosition(event)
+    }
+
+    // Mouse up
+    const handleMouseUp = () => {
+        setIsMouseDown(false)
+    }
+
+    // Mouse moved
+    const handleMouseMove = (event) => {
+        if (isMouseDown) {
+            changePosition(event)
+        }
     }
 
     // Calculate playback position
@@ -80,12 +108,15 @@ const ProgressBar = (props) => {
 
     // Element
     return (
-        <Box width='100%' onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onMouseDown={handleMouseDown} sx={{
+        <Box ref={progressBarRef} width='100%' onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove} sx={{
             // Layout
             position: 'absolute',
             bottom: '56px',
             height: '16px',
             paddingTop: '8px',
+
+            // Show the mouse
+            cursor: 'pointer',
 
             // Transition
             transition: 'opacity 0.5s ease',
