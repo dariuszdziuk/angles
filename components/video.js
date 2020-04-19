@@ -2,8 +2,8 @@
 import React, { useRef, useState, useEffect } from 'react'
 
 // Components
-import { cameras } from '../models/camera'
-import MotionLayer from './motionLayer'
+import { cameras } from '../source/camera'
+import AILayer from './AILayer'
 
 // Experience configuration
 const config = {
@@ -172,13 +172,14 @@ const Video = (props) => {
                 onClick={handleVideoClick}
                 width='100%'
                 style={getStyle()}
+                crossOrigin='anonymous'
             >
                 <source src={props.src} type='video/mp4' />
             </video>
 
             {/* Motion Layer if video is primary */}
             {props.isPrimary &&
-                <MotionLayer
+                <AILayer
                     isActive={activeCamera == cameras.ai}
                     onRequestVideo={() => { return videoDom.current }}
                 />

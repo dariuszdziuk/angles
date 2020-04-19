@@ -6,7 +6,7 @@ import Layout from '../components/layout'
 import Nav from '../components/nav'
 import Video from '../components/video'
 import ProgressBar from '../components/progressBar'
-import { cameras } from '../models/camera'
+import { cameras } from '../source/camera'
 
 // Rebass components
 import {

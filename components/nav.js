@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 
 // Components
-import { cameras } from '../models/camera'
+import { cameras } from '../source/camera'
 
 // Rebase
 import {
