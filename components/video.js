@@ -62,6 +62,10 @@ styles.secondary[cameras.both] = {
     marginLeft: '50%'
 }
 
+styles.secondary[cameras.ai] = {
+    opacity: 0.0
+}
+
 /**
  * Video component
  */
@@ -74,10 +78,10 @@ const Video = (props) => {
     const [mousePosition, setMousePosition] = useState(props.mousePosition)
 
     // Video element
-    const videoDom = useRef(null)
+    const videoDom = useRef()
 
     // Playback position timer (only for primary video)
-    const currentTimeTimer = useRef(null)
+    const currentTimeTimer = useRef()
 
     // Listen to mouse position changes
     useEffect(() => {
@@ -174,7 +178,10 @@ const Video = (props) => {
 
             {/* Motion Layer if video is primary */}
             {props.isPrimary &&
-                <MotionLayer isActive={activeCamera == cameras.ai}  />
+                <MotionLayer
+                    isActive={activeCamera == cameras.ai}
+                    onRequestVideo={() => { return videoDom.current }}
+                />
             }
         </>
     )
