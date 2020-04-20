@@ -3,6 +3,7 @@ import { useRef, useState, useEffect } from 'react'
 
 // Experience configuration
 const config = {
+    useWebWorker: false,
     overlay: {
         backgroundColor: 'rgba(0,0,0,0.2)',
         opacity: 1
@@ -84,7 +85,7 @@ const AILayer = (props) => {
         else if (isActive) {
             // Start analyzing frames
             // WARNING - Assuming PoseNet was loaded already, might not work if it wasn't yet
-            analyzeFrame()
+            // analyzeFrame()
         }
     }, [isActive])
 
@@ -102,7 +103,16 @@ const AILayer = (props) => {
         }, configPoseNet)
 
         // Create a Web Worker
-        
+        const aiWorker = new Worker('/aiWorker.js')
+        aiWorker.postMessage('Hello, world!')
+
+        // Set up and activate the Web Worker
+        const videoStream = videoRef.current.captureStream()
+        const [track] = videoStream.getVideoTracks()
+        const imageCapture = new ImageCapture(track)
+        imageCapture.grabFrame().then(imageBitmap => {
+            aiWorker.postMessage({ imageBitmap }, [imageBitmap])
+        })
 
         // Pose was analyzed
         poseNetRef.current.on('pose', function(results) {
@@ -113,10 +123,15 @@ const AILayer = (props) => {
 
             // Schedule next frame
             if (isActive) {
-                window.requestAnimationFrame(analyzeFrame)
+                // window.requestAnimationFrame(analyzeFrame)
                 // setTimeout(analyzeFrame, 250)
             }
         })
+    }
+
+    // Analysises current frame
+    const analyzeFrame = () => {
+        poseNetRef.current.singlePose(videoRef.current)
     }
 
     // Draws a pose on a canvas
@@ -164,11 +179,6 @@ const AILayer = (props) => {
             ctx.ellipse(pose.rightWrist.x, pose.rightWrist.y, config.wrists.radius, config.wrists.radius, Math.PI / 4, 0, 2 * Math.PI)
             ctx.fill()
         }
-    }
-
-    // Analysises current frame
-    const analyzeFrame = () => {
-        poseNetRef.current.singlePose(videoRef.current)
     }
 
     return (
