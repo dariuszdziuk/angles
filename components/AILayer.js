@@ -26,9 +26,10 @@ const configPoseNet = {
     detectionType: 'single',
     maxPostDetections: 1,
     minConfidence: 0.35,
-    // inputResolution: { width: 640, height: 480 },
+    // inputResolution: { width: 200, height: 200 },
     outputStride: 16,
     multiplier: 0.5,
+    imageScaleFactor: 0.3
     // quantBytes: 4
 }
 
@@ -102,13 +103,12 @@ const AILayer = (props) => {
 
         // Pose was analyzed
         poseNetRef.current.on('pose', function(results) {
-            console.log('[AILayer/Debug] Pose detected', results)
+            // console.log('[AILayer/Debug] Pose detected', results)
 
             // Draw the pose on the canvas
             drawPose(ctxRef.current, results[0])
 
             // Schedule next frame
-            console.log(isActive)
             if (isActive) {
                 window.requestAnimationFrame(analyzeFrame)
                 // setTimeout(analyzeFrame, 250)
@@ -121,7 +121,6 @@ const AILayer = (props) => {
         let pose = poseObject.pose
         let skeleton = poseObject.skeleton
 
-        console.log(videoSize)
         ctx.clearRect(0, 0, videoSize.width, videoSize.height)
 
         // Draw joints
