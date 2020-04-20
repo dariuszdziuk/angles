@@ -1,201 +1,113 @@
-// React & Rebass
-import React, { useState, useRef, useEffect } from 'react'
-import { ThemeProvider } from 'emotion-theming'
-import theme from '@rebass/preset'
+// React & Next
+import React, { useState, useRef } from 'react'
+import Head from 'next/head'
 
-// Rebass
+// Components
+import Layout from '../components/layout'
+import Nav from '../components/nav'
+import Video from '../components/video'
+import ProgressBar from '../components/progressBar'
+import { cameras } from '../source/camera'
+
+// Rebass components
 import {
-    Text,
-    Flex,
-    Box,
-    Button
+    Box
 } from 'rebass'
 
-// Default page
-const IndexPage = () => {
+// Main experience component
+const Experience = () => {
 
-    // State
-    const [currentTimeFirst, setCurrentTimeFirst] = useState(0)
-    const [currentTimeSecond, setCurrentTimeSecond] = useState(0)
-    const [cameraVisibleFirst, setCameraVisibleFirst] = useState(true)
-    const [cameraVisibleSecond, setCameraVisibleSecond] = useState(true)
-    const [useMachineLearning, setUseMachineLearning] = useState(false)
-    const [useSingleCamera, setUseSingleCamera] = useState(false)
+    // Mouse coordinates
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
 
-    // Refs
-    const videoFirst = useRef(null)
-    const videoSecond = useRef(null)
-    const canvas = useRef(null)
-    const ctx = useRef(null)
+    // Active camera
+    const [activeCamera, setActiveCamera] = useState(cameras.front)
 
-    // Load the neural network
-    useEffect(() => {
-        // Set Canvas context
-        ctx.current = canvas.current.getContext('2d')
-    }, [])
+    // Playback state
+    const [isPlaying, setIsPlaying] = useState(false)
+    const [moveToTimeSignal, setMoveToTimeSignal] = useState(0)
 
-    // Methods
-    const restartPlayback = () => {
-        setCurrentTimeFirst(0)
-        setCurrentTimeSecond(0)
+    // Current playback time information
+    const [playbackInfo, setPlaybackInfo] = useState({
+        currentTime: 0,
+        duration: 100
+    })
 
-        videoFirst.current.currentTime = 0
-        videoSecond.current.currentTime = 0
-    }
-
-    const enableAI = () => {
-        // Show the Canvas
-        setUseMachineLearning(true)
-
-        // Set the model
-        console.log('Loading neural network for video', videoFirst.current)
-
-        let poseNet = ml5.poseNet(videoFirst.current, {
-            architecture: 'MobileNetV1',
-            detectionType: 'single',
-            maxPostDetections: 1,
-            minConfidence: 0.35,
-            // inputResolution: { width: 640, height: 480 },
-            outputStride: 16,
-            multiplier: 0.5,
-            // quantBytes: 4
-        }, () => {
-            console.log('model loaded')
-        })
-
-        const currentCanvas = canvas.current
-
-        poseNet.on('pose', (poses) => {
-            // console.log('got results', poses) 
-
-            if (poses && poses.length > 0) {
-                let pose = poses[0].pose
-                let skeleton = poses[0].skeleton
-                drawKeypoints(ctx.current, pose, skeleton)
-    
-                // Draw on the Canvas
-                function drawKeypoints(ctx, pose, skeleton) {
-                    ctx.clearRect(0, 0, currentCanvas.width, currentCanvas.height)
-    
-                    // Draw joints
-                    for (let i = 0; i < pose.keypoints.length; i++) {
-                        let point = pose.keypoints[i]
-    
-                        if (point.score > 0.75) {
-                            ctx.beginPath()
-                            ctx.fillStyle = 'white'
-                            ctx.ellipse(point.position.x, point.position.y, 4, 4, Math.PI / 4, 0, 2 * Math.PI)
-                            ctx.fill()
-                        }
-                    }
-    
-                    // Draw skeleton lines
-                    for (let si = 0; si < skeleton.length; si++) {
-                        let from = skeleton[si][0]
-                        let to = skeleton[si][1]
-    
-                        ctx.beginPath()
-                        ctx.strokeStyle = 'white'
-                        ctx.moveTo(from.position.x, from.position.y)
-                        ctx.lineTo(to.position.x, to.position.y)
-                        ctx.stroke()
-                    }
-
-                    // Draw hands
-                    if (pose.leftWrist) {
-                        ctx.beginPath()
-                        ctx.fillStyle = 'red'
-                        ctx.ellipse(pose.leftWrist.x, pose.leftWrist.y, 8, 8, Math.PI / 4, 0, 2 * Math.PI)
-                        ctx.fill()
-                    }
-
-                    if (pose.rightWrist) {
-                        ctx.beginPath()
-                        ctx.fillStyle = 'red'
-                        ctx.ellipse(pose.rightWrist.x, pose.rightWrist.y, 8, 8, Math.PI / 4, 0, 2 * Math.PI)
-                        ctx.fill()
-                    }
-                }  
-            }
+    // Capture global mouse movement
+    const handleMouseMove = (e) => {
+        setMousePosition({
+            x: e.pageX,
+            y: e.pageY
         })
     }
 
-    const switchToOneCamera = () => {
-        if (useSingleCamera) {
-            setCameraVisibleFirst(!cameraVisibleFirst)
-            setCameraVisibleSecond(!cameraVisibleSecond)    
-        }
-        else {
-            setUseSingleCamera(true)
-            setCameraVisibleSecond(false)
-        }
+    // Handle video click
+    const handleVideoClick = () => {
+        setIsPlaying(!isPlaying)
     }
 
-    const switchToTwoCameras = () => {
-        setUseSingleCamera(false)
-        setCameraVisibleFirst(true)
-        setCameraVisibleSecond(true)
+    // Handle video current time change
+    const handleCurrentTimeChange = (playbackInfo) => {
+        setPlaybackInfo(playbackInfo)
     }
 
-    const syncVideos = () => {
-        videoFirst.current.currentTime = videoSecond.current.currentTime
+    // Handle changing the position using progress bar
+    const handlePositionChange = (newTime) => {
+        setMoveToTimeSignal(newTime)
     }
 
+    // Handle camera change
+    const handleActiveCameraChange = (camera) => {
+        setActiveCamera(camera)
+    }
+
+    // Element
     return (
-        <ThemeProvider theme={theme}>
-            <Box mb={2}>
-                <Button mr={2} onClick={restartPlayback}>Restart</Button>
-                <Button mr={2} onClick={switchToOneCamera}>One Camera / Switch</Button>
-                <Button mr={2} onClick={switchToTwoCameras}>Two Cameras</Button>
-                <Button mr={2} onClick={syncVideos}>Sync videos</Button>
-                <Button mr={2} onClick={enableAI}>Enable AI</Button>
-            </Box>
-            <Box height={810} width={1440} style={{
-                backgroundColor: 'pink'
-            }}>
-                <canvas ref={canvas} width="810" height="405" style={{
-                    position: 'absolute',
-                    // backgroundColor: 'blue',
-                    backgroundColor: 'rgba(0,0,0,0.4)',
-                    width: '720px',
-                    height: '405px',
-                    top: '50px',
-                    left: '10px',
-                    zIndex: 1,
-                    visibility: useMachineLearning ? 'visible' : 'hidden'
-                }} />
-                <Box style={{
-                    visibility: cameraVisibleFirst ? 'visible' : 'hidden',
-                    position: 'absolute',
-                    top: '50px',
-                    left: '10px'
-                }}>
-                    <video ref={videoFirst} autoPlay={true} width="810" height="405" style={{
-                        height: useSingleCamera ? '810px' : '405px',
-                        width: useSingleCamera ? '1440px' : '720px',
-                        // filter: 'grayscale(100%)'
-                    }} crossOrigin="anonymous">
-                        <source src="http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix.mp4" type="video/mp4" />
-                        {/* <source src="http://d2z9la3znewur2.cloudfront.net/IMG_3751_1.mp4" type="video/mp4" /> */}
-                    </video>
-                </Box>
-                <Box style={{
-                    visibility: cameraVisibleSecond ? 'visible' : 'hidden',
-                    marginLeft: useSingleCamera ? '-720px' : '0',
-                    position: 'absolute',
-                    left: '730px'
-                }}>
-                    <video ref={videoSecond} autoPlay={true} muted={true} style={{
-                        height: useSingleCamera ? '810px' : '405px',
-                        width: useSingleCamera ? '1440px' : '720px',
-                        filter: 'grayscale(100%)'
-                    }}>
-                        <source src="http://d2z9la3znewur2.cloudfront.net/IMG_3751.mp4" type="video/mp4" />
-                    </video>
-                </Box>
-            </Box>
-        </ThemeProvider>
+        <>
+            <Head>
+                <title>— // experience → 0.1 —</title>
+            </Head>
+            <Layout onMouseMove={handleMouseMove}
+                nav={<Nav activeCamera={activeCamera} onActiveCameraChange={handleActiveCameraChange} />}
+                
+                // Videos section
+                videos={
+                    <Box>
+                        <Video
+                            mousePosition={mousePosition}
+                            moveToTimeSignal={moveToTimeSignal}
+                            muted={false}
+                            isPrimary={true}
+                            isPlaying={isPlaying}
+                            onClick={handleVideoClick}
+                            onCurrentTimeChange={handleCurrentTimeChange}
+                            activeCamera={activeCamera}
+                            src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix+-+Camera+1+Full+Length+720p.mp4'
+                        />
+                        <Video
+                            mousePosition={mousePosition}
+                            moveToTimeSignal={moveToTimeSignal}
+                            muted={true}
+                            isPrimary={false}
+                            isPlaying={isPlaying}
+                            onClick={handleVideoClick}
+                            activeCamera={activeCamera}
+                            src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix+-+Camera+2+Full+Length+720p.mp4'
+                        />
+                    </Box>
+                }
+
+                // Progress bar
+                progressBar={
+                    <ProgressBar
+                        mousePosition={mousePosition}
+                        onPositionChange={handlePositionChange}
+                        playbackInfo={playbackInfo}
+                    />
+                }
+            />
+        </>
     )
 }
 
-export default IndexPage
+export default Experience

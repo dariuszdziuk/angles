@@ -25,12 +25,12 @@ const configPoseNet = {
     architecture: 'MobileNetV1',
     detectionType: 'single',
     maxPostDetections: 1,
-    minConfidence: 0.35,
+    minConfidence: 0.50,
     // inputResolution: { width: 200, height: 200 },
     outputStride: 16,
     multiplier: 0.5,
-    imageScaleFactor: 0.3
-    // quantBytes: 4
+    imageScaleFactor: 0.3,
+    // quantBytes: 2
 }
 
 /**
@@ -100,6 +100,9 @@ const AILayer = (props) => {
             // Starts analyzing frames
             analyzeFrame()
         }, configPoseNet)
+
+        // Create a Web Worker
+        
 
         // Pose was analyzed
         poseNetRef.current.on('pose', function(results) {

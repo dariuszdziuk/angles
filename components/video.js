@@ -3,7 +3,7 @@ import React, { useRef, useState, useEffect } from 'react'
 
 // Components
 import { cameras } from '../source/camera'
-import AILayer from './AILayer'
+import AILayer from './aiLayer'
 
 // Experience configuration
 const config = {
