@@ -2,7 +2,17 @@
  * aiWorker.js
  */
 
- // Load posenet scripts
+// Configuration
+const config = {
+    minConfidence: 0.35,
+    posenet: {
+        architecture: 'MobileNetV1',
+        outputStride: 16,
+        multiplier: 0.75
+    }
+}
+
+// Load posenet scripts
 importScripts('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs')
 importScripts('https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet')
 
@@ -10,15 +20,41 @@ importScripts('https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet')
 let net = null
 
 // Load the posenet model
-posenet.load({
-    architecture: 'MobileNetV1',
-    outputStride: 16,
-    multiplier: 0.75
-}).then(result => {
+posenet.load(config.posenet).then(result => {
     net = result
-    console.log('Posenet model loaded.', net)
+    console.log('[aiWorker/Debug] Posenet model loaded', net)
+
+    // Send the message back to the app
+    postMessage({
+        type: 'MODEL_LOADED',
+        message: 'The Posenet model has been loaded.'
+    })
 })
 
-self.addEventListener('message', event => {
-    console.log('Worker received:', event)
+// Handle worker message
+self.addEventListener('message', e => {
+    // console.log('[aiWorker/Debug] Received message from the app', e)
+
+    switch (e.data.type) {
+        case 'VIDEO_FRAME':
+            // Analyze the pose
+            net.estimateSinglePose(e.data.imageData).then(pose => {
+                // console.log('[aiWorker/Debug] Posenet pose detected', pose)
+
+                // Create the result including the skeleton
+                let result = {
+                    pose: pose,
+                    skeleton: posenet.getAdjacentKeyPoints(pose.keypoints, config.minConfidence)
+                }
+
+                // Send the pose back to the app
+                postMessage({
+                    type: 'POSE_DETECTED',
+                    message: 'The Posenet pose has been detected',
+                    result: result
+                })
+            })
+            break
+    }
+
 })

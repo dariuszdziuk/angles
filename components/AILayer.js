@@ -3,7 +3,7 @@ import { useRef, useState, useEffect } from 'react'
 
 // Experience configuration
 const config = {
-    useWebWorker: false,
+    useWebWorker: true,
     overlay: {
         backgroundColor: 'rgba(0,0,0,0.2)',
         opacity: 1
@@ -25,7 +25,7 @@ const config = {
 const configPoseNet = {
     architecture: 'MobileNetV1',
     detectionType: 'single',
-    maxPostDetections: 1,
+    maxPoseDetections: 1,
     minConfidence: 0.50,
     // inputResolution: { width: 200, height: 200 },
     outputStride: 16,
@@ -50,9 +50,20 @@ const AILayer = (props) => {
     
     // Reference objects
     const videoRef = useRef()
+
+    // Overlay canvas
     const canvasRef = useRef()
     const ctxRef = useRef()
+
+    // Offscreen canvas
+    const offscreenCanvasRef = useRef()
+    const offscreenCtxRef = useRef()
+
+    // AI
     const poseNetRef = useRef()
+
+    // Debug
+    const stats = useRef()
 
     // Listen to active prop change
     useEffect(() => {
@@ -79,7 +90,15 @@ const AILayer = (props) => {
     useEffect(() => {
         // First time activation
         if (isActive && !poseNetRef.current) {
-            enableAI()
+            // Common setup
+            commonInit()
+
+            if (config.useWebWorker) {
+                enableWebWorkerAI()
+            }
+            else {
+                enableAI()
+            }
         }
         // AI was already created
         else if (isActive) {
@@ -89,11 +108,60 @@ const AILayer = (props) => {
         }
     }, [isActive])
 
-    // Enables the AI module
-    const enableAI = () => {
+    // Common properties setup
+    const commonInit = () => {
         // Create Canvas
         ctxRef.current = canvasRef.current.getContext('2d')
 
+        // Performance stats
+        stats.current = new Stats()
+        stats.current.showPanel(0)
+        document.body.appendChild(stats.current.dom)
+    }
+
+    // Enables the AI module running in a WebWorker
+    const enableWebWorkerAI = () => {
+        // Create a Web Worker
+        const aiWorker = new Worker('/aiWorker.js')
+        aiWorker.postMessage('Hello, world!')
+
+        // Setup the canvas
+        offscreenCtxRef.current = offscreenCanvasRef.current.getContext('2d')
+
+        // Sends a frame to the worker
+        const sendFrameToWorker = () => {
+            stats.current.begin()
+
+            // Convert the video frame to image data
+            offscreenCtxRef.current.drawImage(videoRef.current, 0, 0, videoSize.width, videoSize.height)
+            let imageData = offscreenCtxRef.current.getImageData(0, 0, videoSize.width, videoSize.height)
+
+            // Pass to the worker
+            aiWorker.postMessage({
+                type: 'VIDEO_FRAME',
+                imageData: imageData
+            })
+        }
+
+        // Listen to events from the worker
+        aiWorker.onmessage = function(e) {
+            // console.log('[aiLayer/Debug] Message from aiWorker', e)
+
+            switch(e.data.type) {
+                case 'MODEL_LOADED':
+                    sendFrameToWorker()
+                    break
+                case 'POSE_DETECTED':
+                    drawPose(ctxRef.current, e.data.result)
+                    stats.current.end()
+                    window.requestAnimationFrame(sendFrameToWorker)
+                    break
+            }
+        }
+    }
+
+    // Enables the AI module
+    const enableAI = () => {
         // Create Posenet
         poseNetRef.current = ml5.poseNet(() => {
             console.log('Model ready')
@@ -102,28 +170,17 @@ const AILayer = (props) => {
             analyzeFrame()
         }, configPoseNet)
 
-        // Create a Web Worker
-        const aiWorker = new Worker('/aiWorker.js')
-        aiWorker.postMessage('Hello, world!')
-
-        // Set up and activate the Web Worker
-        const videoStream = videoRef.current.captureStream()
-        const [track] = videoStream.getVideoTracks()
-        const imageCapture = new ImageCapture(track)
-        imageCapture.grabFrame().then(imageBitmap => {
-            aiWorker.postMessage({ imageBitmap }, [imageBitmap])
-        })
-
         // Pose was analyzed
         poseNetRef.current.on('pose', function(results) {
-            // console.log('[AILayer/Debug] Pose detected', results)
-
             // Draw the pose on the canvas
             drawPose(ctxRef.current, results[0])
 
+            // Count FPS
+            stats.current.end()
+
             // Schedule next frame
             if (isActive) {
-                // window.requestAnimationFrame(analyzeFrame)
+                window.requestAnimationFrame(analyzeFrame)
                 // setTimeout(analyzeFrame, 250)
             }
         })
@@ -131,6 +188,7 @@ const AILayer = (props) => {
 
     // Analysises current frame
     const analyzeFrame = () => {
+        stats.current.begin()
         poseNetRef.current.singlePose(videoRef.current)
     }
 
@@ -182,19 +240,26 @@ const AILayer = (props) => {
     }
 
     return (
-        <canvas ref={canvasRef} width={videoSize.width} height={videoSize.height} style={{
-            // Layout
-            position: 'absolute',
-            width: videoSize.width,
-            height: videoSize.height,
-            zIndex: 1,
-            visibility: isActive ? 'visible' : 'hidden',
+        <>
+            {/* Overlay Canvas - Visible to the user */}
+            <canvas ref={canvasRef} width={videoSize.width} height={videoSize.height} style={{
+                // Layout
+                position: 'absolute',
+                width: videoSize.width,
+                height: videoSize.height,
+                zIndex: 1,
+                visibility: isActive ? 'visible' : 'hidden',
 
-            // Debug
-            backgroundColor: config.overlay.backgroundColor,
-            opacity: config.overlay.opacity
-        }}>
-        </canvas>
+                // Debug
+                backgroundColor: config.overlay.backgroundColor,
+                opacity: config.overlay.opacity
+            }} />
+
+            {/* Offscreen canvas for the WebWorker video frame capturing */}
+            <canvas ref={offscreenCanvasRef} width={videoSize.width} height={videoSize.height} style={{
+                visibility: 'hidden'
+            }} />
+        </>
     )
 }
 
