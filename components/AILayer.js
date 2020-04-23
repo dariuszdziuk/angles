@@ -3,7 +3,10 @@ import { useRef, useState, useEffect } from 'react'
 
 // Experience configuration
 const config = {
-    useWebWorker: true,
+    crop: {
+        left: 150,
+        right: 150
+    },
     overlay: {
         backgroundColor: 'rgba(0,0,0,0.2)',
         opacity: 1
@@ -19,19 +22,6 @@ const config = {
     skeleton: {
         strokeStyle: 'white'
     }
-}
-
-// PoseNet configuration
-const configPoseNet = {
-    architecture: 'MobileNetV1',
-    detectionType: 'single',
-    maxPoseDetections: 1,
-    minConfidence: 0.50,
-    // inputResolution: { width: 200, height: 200 },
-    outputStride: 16,
-    multiplier: 0.5,
-    imageScaleFactor: 0.3,
-    // quantBytes: 2
 }
 
 /**
@@ -92,13 +82,7 @@ const AILayer = (props) => {
         if (isActive && !poseNetRef.current) {
             // Common setup
             commonInit()
-
-            if (config.useWebWorker) {
-                enableWebWorkerAI()
-            }
-            else {
-                enableAI()
-            }
+            enableWebWorkerAI()
         }
         // AI was already created
         else if (isActive) {
@@ -123,7 +107,13 @@ const AILayer = (props) => {
     const enableWebWorkerAI = () => {
         // Create a Web Worker
         const aiWorker = new Worker('/aiWorker.js')
-        aiWorker.postMessage('Hello, world!')
+        aiWorker.postMessage({
+            type: 'INITIALIZE',
+            config: {
+                width: videoSize.width - config.crop.left - config.crop.right,
+                height: videoSize.height
+            }
+        })
 
         // Setup the canvas
         offscreenCtxRef.current = offscreenCanvasRef.current.getContext('2d')
@@ -134,7 +124,7 @@ const AILayer = (props) => {
 
             // Convert the video frame to image data
             offscreenCtxRef.current.drawImage(videoRef.current, 0, 0, videoSize.width, videoSize.height)
-            let imageData = offscreenCtxRef.current.getImageData(0, 0, videoSize.width, videoSize.height)
+            let imageData = offscreenCtxRef.current.getImageData(config.crop.left, 0, videoSize.width - config.crop.left - config.crop.right, videoSize.height)
 
             // Pass to the worker
             aiWorker.postMessage({
@@ -153,48 +143,26 @@ const AILayer = (props) => {
                     break
                 case 'POSE_DETECTED':
                     drawPose(ctxRef.current, e.data.result)
+                    drawDebugElements(ctxRef.current)
                     stats.current.end()
+
+                    // Next frame
                     window.requestAnimationFrame(sendFrameToWorker)
                     break
             }
         }
     }
 
-    // Enables the AI module
-    const enableAI = () => {
-        // Create Posenet
-        poseNetRef.current = ml5.poseNet(() => {
-            console.log('Model ready')
-
-            // Starts analyzing frames
-            analyzeFrame()
-        }, configPoseNet)
-
-        // Pose was analyzed
-        poseNetRef.current.on('pose', function(results) {
-            // Draw the pose on the canvas
-            drawPose(ctxRef.current, results[0])
-
-            // Count FPS
-            stats.current.end()
-
-            // Schedule next frame
-            if (isActive) {
-                window.requestAnimationFrame(analyzeFrame)
-                // setTimeout(analyzeFrame, 250)
-            }
-        })
-    }
-
-    // Analysises current frame
-    const analyzeFrame = () => {
-        stats.current.begin()
-        poseNetRef.current.singlePose(videoRef.current)
+    // Draw debug elements on the canvas
+    const drawDebugElements = (ctx) => {
+        ctx.fillStyle = 'rgba(255,0,0,0.2)'
+        ctx.fillRect(0, 0, config.crop.left, videoSize.height)
+        ctx.fillRect(videoSize.width - config.crop.right, 0, config.crop.right, videoSize.height)
     }
 
     // Draws a pose on a canvas
     const drawPose = (ctx, poseObject) => {
-        console.log(poseObject)
+        // console.log(poseObject)
         let pose = poseObject.pose
         let skeleton = poseObject.skeleton
 
@@ -217,7 +185,7 @@ const AILayer = (props) => {
                 }
 
                 ctx.fillStyle = fillStyle
-                ctx.ellipse(point.position.x, point.position.y, radius, radius, Math.PI / 4, 0, 2 * Math.PI)
+                ctx.ellipse(point.position.x + config.crop.left, point.position.y, radius, radius, Math.PI / 4, 0, 2 * Math.PI)
                 ctx.fill()
             }
         }
@@ -229,24 +197,9 @@ const AILayer = (props) => {
 
             ctx.beginPath()
             ctx.strokeStyle = config.skeleton.strokeStyle
-            ctx.moveTo(from.position.x, from.position.y)
-            ctx.lineTo(to.position.x, to.position.y)
+            ctx.moveTo(from.position.x + config.crop.left, from.position.y)
+            ctx.lineTo(to.position.x + config.crop.left, to.position.y)
             ctx.stroke()
-        }
-
-        // Draw hands
-        if (pose.leftWrist) {
-            ctx.beginPath()
-            ctx.fillStyle = config.wrists.fillStyle
-            ctx.ellipse(pose.leftWrist.x, pose.leftWrist.y, config.wrists.radius, config.wrists.radius, Math.PI / 4, 0, 2 * Math.PI)
-            ctx.fill()
-        }
-
-        if (pose.rightWrist) {
-            ctx.beginPath()
-            ctx.fillStyle = config.wrists.fillStyle
-            ctx.ellipse(pose.rightWrist.x, pose.rightWrist.y, config.wrists.radius, config.wrists.radius, Math.PI / 4, 0, 2 * Math.PI)
-            ctx.fill()
         }
     }
 
