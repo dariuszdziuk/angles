@@ -194,6 +194,7 @@ const AILayer = (props) => {
 
     // Draws a pose on a canvas
     const drawPose = (ctx, poseObject) => {
+        console.log(poseObject)
         let pose = poseObject.pose
         let skeleton = poseObject.skeleton
 
@@ -203,10 +204,20 @@ const AILayer = (props) => {
         for (let i = 0; i < pose.keypoints.length; i++) {
             let point = pose.keypoints[i]
 
-            if (point.score > 0.75) {
+            if (point.score > 0.35) {
                 ctx.beginPath()
-                ctx.fillStyle = config.joints.fillStyle
-                ctx.ellipse(point.position.x, point.position.y, config.joints.radius, config.joints.radius, Math.PI / 4, 0, 2 * Math.PI)
+
+                let fillStyle = config.joints.fillStyle
+                let radius = config.joints.radius
+
+                // Different style for wrists
+                if (point.part == 'rightWrist' || point.part == 'leftWrist') {
+                    fillStyle = config.wrists.fillStyle
+                    radius = config.wrists.radius
+                }
+
+                ctx.fillStyle = fillStyle
+                ctx.ellipse(point.position.x, point.position.y, radius, radius, Math.PI / 4, 0, 2 * Math.PI)
                 ctx.fill()
             }
         }
