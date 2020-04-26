@@ -12,8 +12,8 @@ const config = {
         height: 1080
     },
     ai: {
-        detectMs: 250, // Number of ms mixer position has to be detected for, to avoid accidentals
-        disableMs: 1000 // How long after stopping detection camera should be active
+        detectMs: 500, // Number of ms mixer position has to be detected for, to avoid accidentals
+        disableMs: 1500 // How long after stopping detection camera should be active
     },
     crop: {
         left: 200,
@@ -130,6 +130,7 @@ const AILayer = (props) => {
             clearTimeout(detectTimer.current)
 
             // Activate disable timer
+            clearTimeout(disableTimer.current)
             disableTimer.current = setTimeout(() => {
                 if (props.onMixingDetectedChange) {
                     props.onMixingDetectedChange(false)
