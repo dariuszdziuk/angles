@@ -1,26 +1,31 @@
 // React
 import { useRef, useState, useEffect } from 'react'
 
+// Utils
+import Detector from '../source/detector'
+import drawSkeleton from '../source/skeleton'
+
 // Experience configuration
 const config = {
+    sourceVideoSize: {
+        width: 1920,
+        height: 1080
+    },
     crop: {
-        left: 150,
-        right: 150
+        left: 250,
+        right: 250
     },
     overlay: {
         backgroundColor: 'rgba(0,0,0,0.2)',
         opacity: 1
     },
-    wrists: {
-        fillStyle: 'red',
-        radius: 8
-    },
-    joints: {
-        fillStyle: 'white',
-        radius: 4
-    },
-    skeleton: {
-        strokeStyle: 'white'
+    mixer: {
+        x: 750,
+        y: 350,
+        width: 350,
+        height: 400,
+        strokeStyle: 'white',
+        strokeStyleActive: 'red'
     }
 }
 
@@ -35,7 +40,8 @@ const AILayer = (props) => {
     // Dynamic dimensions
     const [videoSize, setVideoSize] = useState({
         width: 10,
-        height: 10
+        height: 10,
+        ratio: 1.0
     })
     
     // Reference objects
@@ -50,7 +56,12 @@ const AILayer = (props) => {
     const offscreenCtxRef = useRef()
 
     // AI
-    const poseNetRef = useRef()
+    const detector = useRef(new Detector(
+        config.mixer.x,
+        config.mixer.y,
+        config.mixer.width,
+        config.mixer.height
+    ))
 
     // Debug
     const stats = useRef()
@@ -67,7 +78,8 @@ const AILayer = (props) => {
             let videoRect = videoRef.current.getBoundingClientRect()
             setVideoSize({
                 width: videoRect.width,
-                height: videoRect.height
+                height: videoRect.height,
+                ratio: videoRect.width / config.sourceVideoSize.width
             })
 
             // Warning - Hack to make the video size work with PoseNet
@@ -79,10 +91,12 @@ const AILayer = (props) => {
     // Listen to activity change
     useEffect(() => {
         // First time activation
-        if (isActive && !poseNetRef.current) {
+        if (isActive) {
             // Common setup
             commonInit()
             enableWebWorkerAI()
+
+            // TODO - don't init it already was created
         }
         // AI was already created
         else if (isActive) {
@@ -118,13 +132,23 @@ const AILayer = (props) => {
         // Setup the canvas
         offscreenCtxRef.current = offscreenCanvasRef.current.getContext('2d')
 
+        // Configure the Detector
+        detector.current.width = config.mixer.width * videoSize.radio
+        detector.current.height = config.mixer.height * videoSize.radio
+
         // Sends a frame to the worker
         const sendFrameToWorker = () => {
             stats.current.begin()
 
             // Convert the video frame to image data
             offscreenCtxRef.current.drawImage(videoRef.current, 0, 0, videoSize.width, videoSize.height)
-            let imageData = offscreenCtxRef.current.getImageData(config.crop.left, 0, videoSize.width - config.crop.left - config.crop.right, videoSize.height)
+
+            let imageData = offscreenCtxRef.current.getImageData(
+                config.crop.left * videoSize.ratio,
+                0,
+                videoSize.width - (config.crop.left + config.crop.right) * videoSize.ratio,
+                videoSize.height
+            )
 
             // Pass to the worker
             aiWorker.postMessage({
@@ -142,9 +166,18 @@ const AILayer = (props) => {
                     sendFrameToWorker()
                     break
                 case 'POSE_DETECTED':
-                    drawPose(ctxRef.current, e.data.result)
+                    drawSkeleton(ctxRef.current, e.data.result, videoSize.width, videoSize.height, videoSize.ratio, config.crop.left)
                     drawDebugElements(ctxRef.current)
                     stats.current.end()
+
+                    // Analyze wrists position
+                    for (let i = 0; i < e.data.result.pose.keypoints.length; i++) {
+                        let point = e.data.result.pose.keypoints[i]
+
+                        if (point.part == 'leftWrist' || point.part == 'rightWrist') {
+                            detector.current.capturePoint(point.part, point.x, point.y)
+                        }
+                    }
 
                     // Next frame
                     window.requestAnimationFrame(sendFrameToWorker)
@@ -155,52 +188,16 @@ const AILayer = (props) => {
 
     // Draw debug elements on the canvas
     const drawDebugElements = (ctx) => {
+        // Margins
         ctx.fillStyle = 'rgba(255,0,0,0.2)'
-        ctx.fillRect(0, 0, config.crop.left, videoSize.height)
-        ctx.fillRect(videoSize.width - config.crop.right, 0, config.crop.right, videoSize.height)
-    }
+        ctx.fillRect(0, 0, config.crop.left * videoSize.ratio, videoSize.height)
+        ctx.fillRect(videoSize.width - config.crop.right * videoSize.ratio, 0, config.crop.right * videoSize.ratio, videoSize.height)
 
-    // Draws a pose on a canvas
-    const drawPose = (ctx, poseObject) => {
-        // console.log(poseObject)
-        let pose = poseObject.pose
-        let skeleton = poseObject.skeleton
-
-        ctx.clearRect(0, 0, videoSize.width, videoSize.height)
-
-        // Draw joints
-        for (let i = 0; i < pose.keypoints.length; i++) {
-            let point = pose.keypoints[i]
-
-            if (point.score > 0.35) {
-                ctx.beginPath()
-
-                let fillStyle = config.joints.fillStyle
-                let radius = config.joints.radius
-
-                // Different style for wrists
-                if (point.part == 'rightWrist' || point.part == 'leftWrist') {
-                    fillStyle = config.wrists.fillStyle
-                    radius = config.wrists.radius
-                }
-
-                ctx.fillStyle = fillStyle
-                ctx.ellipse(point.position.x + config.crop.left, point.position.y, radius, radius, Math.PI / 4, 0, 2 * Math.PI)
-                ctx.fill()
-            }
-        }
-
-        // Draw skeleton lines
-        for (let si = 0; si < skeleton.length; si++) {
-            let from = skeleton[si][0]
-            let to = skeleton[si][1]
-
-            ctx.beginPath()
-            ctx.strokeStyle = config.skeleton.strokeStyle
-            ctx.moveTo(from.position.x + config.crop.left, from.position.y)
-            ctx.lineTo(to.position.x + config.crop.left, to.position.y)
-            ctx.stroke()
-        }
+        // Mixer bounds
+        ctx.beginPath()
+        ctx.strokeStyle = (detector.current.pointsInBound() > 0) ? config.mixer.strokeStyleActive : config.mixer.strokeStyle
+        ctx.rect(config.mixer.x * videoSize.ratio, config.mixer.y * videoSize.ratio, config.mixer.width * videoSize.ratio, config.mixer.height * videoSize.ratio)
+        ctx.stroke()
     }
 
     return (
