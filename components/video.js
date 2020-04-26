@@ -46,6 +46,10 @@ styles.primary[cameras.both] = {
     marginLeft: '-25%'
 }
 
+styles.primary[cameras.ai] = {
+    opacity: 1.0
+}
+
 // Secondary camera
 styles.secondary[cameras.front] = {
     opacity: 0.0
@@ -63,7 +67,9 @@ styles.secondary[cameras.both] = {
 }
 
 styles.secondary[cameras.ai] = {
-    opacity: 0.0
+    opacity: 0.0,
+    top: 0,
+    zIndex: 1
 }
 
 /**
@@ -73,6 +79,7 @@ const Video = (props) => {
 
     // Active camera
     const [activeCamera, setActiveCamera] = useState(props.activeCamera)
+    const [aiMixingDetected, setAiIsMixingDetected] = useState(props.aiMixingDetected)
 
     // Mouse coordinates
     const [mousePosition, setMousePosition] = useState(props.mousePosition)
@@ -104,6 +111,11 @@ const Video = (props) => {
     useEffect(() => {
         setActiveCamera(props.activeCamera)
     }, [props.activeCamera])
+
+    // AI detected mix
+    useEffect(() => {
+        setAiIsMixingDetected(props.aiMixingDetected)
+    }, [props.aiMixingDetected])
 
     // Playback changed
     useEffect(() => {
@@ -138,11 +150,23 @@ const Video = (props) => {
 
     // Returns style based on the state
     const getStyle = () => {
-        let style = props.isPrimary ? styles.primary : styles.secondary
+        let styleSource = props.isPrimary ? styles.primary : styles.secondary
 
-        return {...styles.shared, ...style[activeCamera], ...{
-            transform: config.tracking ? transformationParams() : ''
-        }} 
+        let style = {...styles.shared, ...styleSource[activeCamera], ...{
+            transform: config.tracking ? transformationParams() : '',
+        }}
+
+        // Opacity handling for mixing mode
+        if (activeCamera == cameras.ai) {
+            if (props.isPrimary) {
+                style.opacity = aiMixingDetected ? 0.0 : 1.0
+            }
+            else {
+                style.opacity = aiMixingDetected ? 1.0 : 0.0
+            }
+        }
+
+        return style
     }
 
     // Return transformation params for the video
@@ -182,6 +206,7 @@ const Video = (props) => {
                 <AILayer
                     isActive={activeCamera == cameras.ai}
                     onRequestVideo={() => { return videoDom.current }}
+                    onMixingDetectedChange={props.onMixingDetectedChange}
                 />
             }
         </>

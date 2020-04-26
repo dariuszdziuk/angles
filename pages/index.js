@@ -22,6 +22,7 @@ const Experience = () => {
 
     // Active camera
     const [activeCamera, setActiveCamera] = useState(cameras.front)
+    const [aiMixingDetected, setAiMixingDetected] = useState(false)
 
     // Playback state
     const [isPlaying, setIsPlaying] = useState(false)
@@ -61,6 +62,11 @@ const Experience = () => {
         setActiveCamera(camera)
     }
 
+    // Handle mixing detected change in AI mode
+    const handleMixingDetectedChange = (mixingDetected) => {
+        setAiMixingDetected(mixingDetected)
+    }
+
     // Element
     return (
         <>
@@ -81,7 +87,9 @@ const Experience = () => {
                             isPlaying={isPlaying}
                             onClick={handleVideoClick}
                             onCurrentTimeChange={handleCurrentTimeChange}
+                            onMixingDetectedChange={handleMixingDetectedChange}
                             activeCamera={activeCamera}
+                            aiMixingDetected={aiMixingDetected}
                             src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix+-+Camera+1+Full+Length+720p.mp4'
                         />
                         <Video
@@ -92,6 +100,7 @@ const Experience = () => {
                             isPlaying={isPlaying}
                             onClick={handleVideoClick}
                             activeCamera={activeCamera}
+                            aiMixingDetected={aiMixingDetected}
                             src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix+-+Camera+2+Full+Length+720p.mp4'
                         />
                     </Box>

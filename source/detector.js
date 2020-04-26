@@ -31,9 +31,9 @@ class Detector {
     pointsInBound() {
         let count = 0
 
-        for (let point of Object.values(this.#points)) {
-            console.log(point)
-            if (point.inBounds) {
+        for (let point in this.#points) {
+            // console.log(this.#points[point])
+            if (this.#points[point].inBounds) {
                 count += 1
             }
         }

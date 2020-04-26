@@ -12,7 +12,7 @@ const config = {
         height: 1080
     },
     crop: {
-        left: 250,
+        left: 200,
         right: 250
     },
     overlay: {
@@ -20,10 +20,10 @@ const config = {
         opacity: 1
     },
     mixer: {
-        x: 750,
-        y: 350,
-        width: 350,
-        height: 400,
+        x: 800,
+        y: 450,
+        width: 250,
+        height: 350,
         strokeStyle: 'white',
         strokeStyleActive: 'red'
     }
@@ -36,6 +36,9 @@ const AILayer = (props) => {
 
     // Active state
     const [isActive, setIsActive] = useState(props.isActive)
+
+    // Mixer pose detected
+    const [mixingDetected, setMixingDetected] = useState(false)
 
     // Dynamic dimensions
     const [videoSize, setVideoSize] = useState({
@@ -83,8 +86,8 @@ const AILayer = (props) => {
             })
 
             // Warning - Hack to make the video size work with PoseNet
-            videoRef.current.width = videoRect.width
-            videoRef.current.height = videoRect.height
+            // videoRef.current.width = videoRect.width
+            // videoRef.current.height = videoRect.height
         }
     }, [props.isActive])
 
@@ -105,6 +108,14 @@ const AILayer = (props) => {
             // analyzeFrame()
         }
     }, [isActive])
+
+    // Mixing detected change
+    useEffect(() => {
+        console.log('[AiLayer] Mixing detected', mixingDetected)
+        if (props.onMixingDetectedChange) {
+            props.onMixingDetectedChange(mixingDetected)
+        }
+    }, [mixingDetected])
 
     // Common properties setup
     const commonInit = () => {
@@ -133,8 +144,10 @@ const AILayer = (props) => {
         offscreenCtxRef.current = offscreenCanvasRef.current.getContext('2d')
 
         // Configure the Detector
-        detector.current.width = config.mixer.width * videoSize.radio
-        detector.current.height = config.mixer.height * videoSize.radio
+        detector.current.x = config.mixer.x * videoSize.ratio
+        detector.current.y = config.mixer.y * videoSize.ratio
+        detector.current.width = config.mixer.width * videoSize.ratio
+        detector.current.height = config.mixer.height * videoSize.ratio
 
         // Sends a frame to the worker
         const sendFrameToWorker = () => {
@@ -175,9 +188,12 @@ const AILayer = (props) => {
                         let point = e.data.result.pose.keypoints[i]
 
                         if (point.part == 'leftWrist' || point.part == 'rightWrist') {
-                            detector.current.capturePoint(point.part, point.x, point.y)
+                            detector.current.capturePoint(point.part, point.position.x + config.crop.left * videoSize.ratio, point.position.y)
                         }
                     }
+
+                    setMixingDetected(detector.current.pointsInBound() > 0)
+                    // console.log(detector.current.pointsInBound() > 0)
 
                     // Next frame
                     window.requestAnimationFrame(sendFrameToWorker)
