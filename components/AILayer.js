@@ -11,6 +11,10 @@ const config = {
         width: 1920,
         height: 1080
     },
+    ai: {
+        detectMs: 250, // Number of ms mixer position has to be detected for, to avoid accidentals
+        disableMs: 1000 // How long after stopping detection camera should be active
+    },
     crop: {
         left: 200,
         right: 250
@@ -21,9 +25,9 @@ const config = {
     },
     mixer: {
         x: 800,
-        y: 450,
-        width: 250,
-        height: 350,
+        y: 400,
+        width: 300,
+        height: 400,
         strokeStyle: 'white',
         strokeStyleActive: 'red'
     }
@@ -59,12 +63,9 @@ const AILayer = (props) => {
     const offscreenCtxRef = useRef()
 
     // AI
-    const detector = useRef(new Detector(
-        config.mixer.x,
-        config.mixer.y,
-        config.mixer.width,
-        config.mixer.height
-    ))
+    const detector = useRef(new Detector())
+    const detectTimer = useRef()
+    const disableTimer = useRef()
 
     // Debug
     const stats = useRef()
@@ -109,12 +110,33 @@ const AILayer = (props) => {
         }
     }, [isActive])
 
-    // Mixing detected change
+    // Mixing detected change - note: will be only triggered on change
     useEffect(() => {
-        console.log('[AiLayer] Mixing detected', mixingDetected)
-        if (props.onMixingDetectedChange) {
-            props.onMixingDetectedChange(mixingDetected)
+        console.log('[AiLayer] Mixing detected change', mixingDetected)
+
+        if (mixingDetected) {
+            detectTimer.current = setTimeout(() => {
+                // Long enough in the mixing zone - send info to parent
+                if (props.onMixingDetectedChange) {
+                    props.onMixingDetectedChange(true)
+                }
+
+                // Also deactive disable timer if happens to be active
+                clearTimeout(disableTimer.current)
+            }, config.ai.detectMs)
         }
+        else {
+            // Cancel detection timer
+            clearTimeout(detectTimer.current)
+
+            // Activate disable timer
+            disableTimer.current = setTimeout(() => {
+                if (props.onMixingDetectedChange) {
+                    props.onMixingDetectedChange(false)
+                }
+            }, config.ai.disableMs)
+        }
+
     }, [mixingDetected])
 
     // Common properties setup
@@ -183,23 +205,28 @@ const AILayer = (props) => {
                     drawDebugElements(ctxRef.current)
                     stats.current.end()
 
-                    // Analyze wrists position
-                    for (let i = 0; i < e.data.result.pose.keypoints.length; i++) {
-                        let point = e.data.result.pose.keypoints[i]
-
-                        if (point.part == 'leftWrist' || point.part == 'rightWrist') {
-                            detector.current.capturePoint(point.part, point.position.x + config.crop.left * videoSize.ratio, point.position.y)
-                        }
-                    }
-
-                    setMixingDetected(detector.current.pointsInBound() > 0)
-                    // console.log(detector.current.pointsInBound() > 0)
+                    // Do AI stuff
+                    aiDetectMixing(e.data.result.pose)
 
                     // Next frame
                     window.requestAnimationFrame(sendFrameToWorker)
                     break
             }
         }
+    }
+
+    // Detects mixing position
+    const aiDetectMixing = (pose) => {
+        // Analyze wrists position
+        for (let i = 0; i < pose.keypoints.length; i++) {
+            let point = pose.keypoints[i]
+
+            if (point.part == 'leftWrist' || point.part == 'rightWrist') {
+                detector.current.capturePoint(point.part, point.position.x + config.crop.left * videoSize.ratio, point.position.y)
+            }
+        }
+
+        setMixingDetected(detector.current.pointsInBound() > 0)
     }
 
     // Draw debug elements on the canvas
