@@ -261,7 +261,7 @@ const AILayer = (props) => {
                 position: 'absolute',
                 width: videoSize.width,
                 height: videoSize.height,
-                zIndex: 1,
+                zIndex: 2,
                 visibility: (isActive && props.isVisible) ? 'visible' : 'hidden',
 
                 // Debug
