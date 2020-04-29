@@ -24,6 +24,9 @@ const Experience = () => {
     const [activeCamera, setActiveCamera] = useState(cameras.front)
     const [aiMixingDetected, setAiMixingDetected] = useState(false)
 
+    // Should show the algorithm
+    const [showAlgorithm, setShowAlgorithm] = useState(true)
+
     // Playback state
     const [isPlaying, setIsPlaying] = useState(false)
     const [moveToTimeSignal, setMoveToTimeSignal] = useState(0)
@@ -67,6 +70,11 @@ const Experience = () => {
         setAiMixingDetected(mixingDetected)
     }
 
+    // Handle showing or hiding the algorithm
+    const handleShowAlgorithmChange = (value) => {
+        setShowAlgorithm(value)
+    }
+
     // Element
     return (
         <>
@@ -74,7 +82,7 @@ const Experience = () => {
                 <title>— // experience → 0.1 —</title>
             </Head>
             <Layout onMouseMove={handleMouseMove}
-                nav={<Nav activeCamera={activeCamera} onActiveCameraChange={handleActiveCameraChange} />}
+                nav={<Nav activeCamera={activeCamera} onActiveCameraChange={handleActiveCameraChange} onShowAlgorithmChange={handleShowAlgorithmChange} />}
                 
                 // Videos section
                 videos={
@@ -89,6 +97,7 @@ const Experience = () => {
                             onMixingDetectedChange={handleMixingDetectedChange}
                             activeCamera={activeCamera}
                             aiMixingDetected={aiMixingDetected}
+                            showAlgorithm={showAlgorithm}
                             src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix+-+Camera+1+Full+Length+720p.mp4'
                         />
                         <Video
@@ -98,6 +107,7 @@ const Experience = () => {
                             onClick={handleVideoClick}
                             activeCamera={activeCamera}
                             aiMixingDetected={aiMixingDetected}
+                            showAlgorithm={showAlgorithm}
                             src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix+-+Camera+2+Full+Length+720p.mp4'
                         />
                     </Box>

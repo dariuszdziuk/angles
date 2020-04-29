@@ -1,5 +1,5 @@
 // React
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 // Components
 import { cameras } from '../source/camera'
@@ -17,6 +17,7 @@ const Nav = (props) => {
 
     // Active camera mode
     const [activeCamera, setActiveCamera] = useState(props.activeCamera)
+    const [showAlgorithm, setShowAlgorithm] = useState(false)
 
     // Return style variant for specified mode
     const getVariant = (camera) => {
@@ -29,6 +30,11 @@ const Nav = (props) => {
         props.onActiveCameraChange(camera)
     }
 
+    // Handle changing the algorithm visualisation
+    useEffect(() => {
+        props.onShowAlgorithmChange(showAlgorithm)
+    }, [showAlgorithm])
+
     return (
         <Flex>
             <Flex fontSize={2} mt={4}>
@@ -36,6 +42,9 @@ const Nav = (props) => {
                 <Box variant={getVariant(cameras.top)} onClick={() => {activateMode(cameras.top)}} ml={4}>cam—2</Box>
                 <Box variant={getVariant(cameras.both)} onClick={() => {activateMode(cameras.both)}} ml={4}>both</Box>
                 <Box variant={getVariant(cameras.ai)} onClick={() => {activateMode(cameras.ai)}} ml={4}>AI</Box>
+                <Box variant='styles.clickableSmall' onClick={() => {setShowAlgorithm(!showAlgorithm)}} ml={2} style={{
+                    visibility: (activeCamera == cameras.ai) ? 'visible' : 'hidden'
+                }}> —  show algorithm [{showAlgorithm ? 'on' : 'off'}]</Box>
             </Flex>
             <Flex fontSize={2} mt={4} ml={'auto'}>
                 <Box variant='styles.clickable' mr={4}>setlist</Box>

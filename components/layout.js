@@ -32,6 +32,16 @@ const theme = {
         active: {
             cursor: 'default',
             borderBottom: '1px solid black'
+        },
+        clickableSmall: {
+            cursor: 'pointer',
+            fontSize: 1,
+            lineHeight: 1.6,
+            bottom: 0,
+            color: '#444',
+            ':hover': {
+                color: '#000'
+            }
         }
     }
 }

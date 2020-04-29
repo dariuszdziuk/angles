@@ -205,6 +205,7 @@ const Video = (props) => {
             {props.isPrimary &&
                 <AILayer
                     isActive={activeCamera == cameras.ai}
+                    isVisible={props.showAlgorithm}
                     onRequestVideo={() => { return videoDom.current }}
                     onMixingDetectedChange={props.onMixingDetectedChange}
                 />

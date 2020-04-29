@@ -262,7 +262,7 @@ const AILayer = (props) => {
                 width: videoSize.width,
                 height: videoSize.height,
                 zIndex: 1,
-                visibility: isActive ? 'visible' : 'hidden',
+                visibility: (isActive && props.isVisible) ? 'visible' : 'hidden',
 
                 // Debug
                 backgroundColor: config.overlay.backgroundColor,
