@@ -104,7 +104,7 @@ const Video = (props) => {
 
     // Video element is loaded
     useEffect(() => {
-        videoDom.current.muted = props.muted
+        videoDom.current.muted = !props.isPrimary
     }, [videoDom])
 
     // Active camera has changed

@@ -82,7 +82,6 @@ const Experience = () => {
                         <Video
                             mousePosition={mousePosition}
                             moveToTimeSignal={moveToTimeSignal}
-                            muted={false}
                             isPrimary={true}
                             isPlaying={isPlaying}
                             onClick={handleVideoClick}
@@ -95,8 +94,6 @@ const Experience = () => {
                         <Video
                             mousePosition={mousePosition}
                             moveToTimeSignal={moveToTimeSignal}
-                            muted={true}
-                            isPrimary={false}
                             isPlaying={isPlaying}
                             onClick={handleVideoClick}
                             activeCamera={activeCamera}
