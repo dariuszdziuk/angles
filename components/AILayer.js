@@ -12,7 +12,7 @@ const config = {
         height: 1080
     },
     ai: {
-        detectMs: 500, // Number of ms mixer position has to be detected for, to avoid accidentals
+        detectMs: 1000, // Number of ms mixer position has to be detected for, to avoid accidentals
         disableMs: 1500 // How long after stopping detection camera should be active
     },
     crop: {
@@ -233,14 +233,23 @@ const AILayer = (props) => {
     // Draw debug elements on the canvas
     const drawDebugElements = (ctx) => {
         // Margins
-        ctx.fillStyle = 'rgba(255,0,0,0.2)'
+        ctx.fillStyle = 'rgba(0,0,0,0.2)'
         ctx.fillRect(0, 0, config.crop.left * videoSize.ratio, videoSize.height)
         ctx.fillRect(videoSize.width - config.crop.right * videoSize.ratio, 0, config.crop.right * videoSize.ratio, videoSize.height)
 
         // Mixer bounds
         ctx.beginPath()
         ctx.strokeStyle = (detector.current.pointsInBound() > 0) ? config.mixer.strokeStyleActive : config.mixer.strokeStyle
-        ctx.rect(config.mixer.x * videoSize.ratio, config.mixer.y * videoSize.ratio, config.mixer.width * videoSize.ratio, config.mixer.height * videoSize.ratio)
+        var mixerRect = {
+            x: config.mixer.x * videoSize.ratio,
+            y: config.mixer.y * videoSize.ratio,
+            width: config.mixer.width * videoSize.ratio,
+            height: config.mixer.height * videoSize.ratio
+        }
+
+        // Draw the mixer bounds
+        ctx.fillRect(mixerRect.x, mixerRect.y, mixerRect.width, mixerRect.height)
+        ctx.rect(mixerRect.x, mixerRect.y, mixerRect.width, mixerRect.height)
         ctx.stroke()
     }
 
@@ -262,6 +271,7 @@ const AILayer = (props) => {
 
             {/* Offscreen canvas for the WebWorker video frame capturing */}
             <canvas ref={offscreenCanvasRef} width={videoSize.width} height={videoSize.height} style={{
+                position: 'absolute',
                 visibility: 'hidden'
             }} />
         </>

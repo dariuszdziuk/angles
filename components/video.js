@@ -68,7 +68,7 @@ styles.secondary[cameras.both] = {
 
 styles.secondary[cameras.ai] = {
     opacity: 0.0,
-    top: 0,
+    // top: 0,
     zIndex: 1
 }
 

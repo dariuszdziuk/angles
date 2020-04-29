@@ -9,7 +9,7 @@ const config = {
     posenet: {
         architecture: 'MobileNetV1',
         outputStride: 16,
-        multiplier: 0.50,
+        multiplier: 0.5,
         quantBytes: 2
     }
 }
