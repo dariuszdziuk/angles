@@ -10,7 +10,11 @@ const config = {
         architecture: 'MobileNetV1',
         outputStride: 16,
         multiplier: 0.5,
-        quantBytes: 2
+        quantBytes: 2,
+        inputResolution: {
+            width: 480,
+            height: 255
+        }
     }
 }
 
@@ -28,12 +32,7 @@ self.addEventListener('message', e => {
     switch (e.data.type) {
         case 'INITIALIZE':
             // Load the posenet model
-            posenet.load({...config.posenet,
-                inputResolution: { 
-                    width: e.data.config.width * config.resFactor,
-                    height: e.data.config.height * config.resFactor
-                },
-            }).then(result => {
+            posenet.load(config.posenet).then(result => {
                 net = result
                 console.log('[aiWorker/Debug] Posenet model loaded', net)
 

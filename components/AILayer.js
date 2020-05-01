@@ -46,8 +46,8 @@ const AILayer = (props) => {
 
     // Dynamic dimensions
     const [videoSize, setVideoSize] = useState({
-        width: 10,
-        height: 10,
+        width: 480,
+        height: 255,
         ratio: 1.0
     })
     
@@ -149,6 +149,11 @@ const AILayer = (props) => {
         stats.current = new Stats()
         stats.current.showPanel(0)
         document.body.appendChild(stats.current.dom)
+    }
+
+    // Updates the size of all elements 
+    const updateSize = (width, height) => {
+
     }
 
     // Enables the AI module running in a WebWorker
