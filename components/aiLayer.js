@@ -45,12 +45,25 @@ const AILayer = (props) => {
     const [mixingDetected, setMixingDetected] = useState(false)
 
     // Dynamic dimensions
-    const [videoSize, setVideoSize] = useState({
-        width: 480,
-        height: 255,
+    const [videoSize, _setVideoSize] = useState({
+        width: null,
+        height: null,
         ratio: 1.0
     })
-    
+
+    // Ref for the videoSize to access from worker event handlers
+    const videoSizeRef = useRef(videoSize)
+
+    // In place of original setVideoSize (workaround from https://stackoverflow.com/questions/55265255/react-usestate-hook-event-handler-using-initial-state)
+    const setVideoSize = (size) => {
+        videoSizeRef.current = size
+        _setVideoSize({
+            width: size.width,
+            height: size.height,
+            ratio: size.ratio
+        })
+    }
+
     // Reference objects
     const videoRef = useRef()
 
@@ -63,6 +76,7 @@ const AILayer = (props) => {
     const offscreenCtxRef = useRef()
 
     // AI
+    const aiWorker = useRef()
     const detector = useRef(new Detector())
     const detectTimer = useRef()
     const disableTimer = useRef()
@@ -76,19 +90,11 @@ const AILayer = (props) => {
 
         // Activate for first time
         if (!videoRef.current && props.isActive) {
+            // Request access to the DOM object
             videoRef.current = props.onRequestVideo()
 
             // Update dimensions
-            let videoRect = videoRef.current.getBoundingClientRect()
-            setVideoSize({
-                width: videoRect.width,
-                height: videoRect.height,
-                ratio: videoRect.width / config.sourceVideoSize.width
-            })
-
-            // Warning - Hack to make the video size work with PoseNet
-            // videoRef.current.width = videoRect.width
-            // videoRef.current.height = videoRect.height
+            updateSize()
         }
     }, [props.isActive])
 
@@ -110,7 +116,7 @@ const AILayer = (props) => {
         }
     }, [isActive])
 
-    // Mixing detected change - note: will be only triggered on change
+    // Mixing detected change - note: will be only triggered when changed
     useEffect(() => {
         console.log('[AiLayer] Mixing detected change', mixingDetected)
 
@@ -140,7 +146,7 @@ const AILayer = (props) => {
 
     }, [mixingDetected])
 
-    // Whether should be showing debug info or not
+    // Handle enabling/disabling showing debug info
     useEffect(() => {
         if (props.isVisible) {
             stats.current && document.body.appendChild(stats.current.dom)
@@ -150,10 +156,24 @@ const AILayer = (props) => {
         }
     }, [props.isVisible])
 
+    // List to window resize event
+    useEffect(() => {
+        const handleResize = () => updateSize()
+
+        // Listen to browser's resize event
+        window.addEventListener('resize', handleResize)
+        return () => {
+            window.removeEventListener('resize', handleResize)
+        }
+    },)
+
     // Common properties setup
     const commonInit = () => {
-        // Create Canvas
+        // Setup the canvas for AI overlay
         ctxRef.current = canvasRef.current.getContext('2d')
+
+        // Setup the canvas for frame capturing
+        offscreenCtxRef.current = offscreenCanvasRef.current.getContext('2d')
 
         // Performance stats
         stats.current = new Stats()
@@ -161,15 +181,85 @@ const AILayer = (props) => {
     }
 
     // Updates the size of all elements 
-    const updateSize = (width, height) => {
+    const updateSize = () => {
+        // Sometimes this is called before video DOM element is ready, ignore then
+        if (!videoRef.current) {
+            return
+        }
 
+        // Use the Video DOM element size
+        let videoRect = videoRef.current.getBoundingClientRect()
+        let ratio = videoRect.width / config.sourceVideoSize.width
+
+        setVideoSize({
+            width: videoRect.width,
+            height: videoRect.height,
+            ratio: ratio
+        })
+
+        console.log('updating size to', videoSize)
+
+        // Update the detector dimensions
+        detector.current.x = config.mixer.x * ratio
+        detector.current.y = config.mixer.y * ratio
+        detector.current.width = config.mixer.width * ratio
+        detector.current.height = config.mixer.height * ratio
+    }
+
+    // Sends current frame to the AI worker
+    const sendFrameToWorker = () => {
+        stats.current.begin()
+
+        // Convert the video frame to image data
+        offscreenCtxRef.current.drawImage(videoRef.current, 0, 0, videoSize.width, videoSize.height)
+        let imageData = offscreenCtxRef.current.getImageData(
+            config.crop.left * videoSize.ratio,
+            0,
+            videoSize.width - (config.crop.left + config.crop.right) * videoSize.ratio,
+            videoSize.height
+        )
+
+        // Pass to the worker
+        aiWorker.current.postMessage({
+            type: 'VIDEO_FRAME',
+            imageData: imageData
+        })
+    }
+
+    // Handle the drawing & interpretation of a single pose
+    const handleAIPose = (pose) => {
+        let size = videoSizeRef.current
+
+        // Draw algorithm elements
+        drawSkeleton(ctxRef.current, pose, size.width, size.height, size.ratio, config.crop.left)
+        drawDebugElements(ctxRef.current, size)
+        stats.current.end()
+
+        // Do AI stuff
+        // aiDetectMixing(pose.pose, size.ratio)
+    }
+
+    // Handles a WebWorker message
+    const handleWebWorkerMessage = (e) => {
+        // console.log('[aiLayer/Debug] Message from aiWorker', e)
+        switch(e.data.type) {
+            case 'MODEL_LOADED':
+                sendFrameToWorker()
+                break
+            case 'POSE_DETECTED':
+                handleAIPose(e.data.result)
+
+                // Request analysis of the next frame
+                window.requestAnimationFrame(sendFrameToWorker)
+                break
+        }
     }
 
     // Enables the AI module running in a WebWorker
     const enableWebWorkerAI = () => {
         // Create a Web Worker
-        const aiWorker = new Worker('/aiWorker.js')
-        aiWorker.postMessage({
+        aiWorker.current = new Worker('/aiWorker.js')
+        aiWorker.current.postMessage({
             type: 'INITIALIZE',
             config: {
                 width: videoSize.width - config.crop.left - config.crop.right,
@@ -177,88 +267,39 @@ const AILayer = (props) => {
             }
         })
 
-        // Setup the canvas
-        offscreenCtxRef.current = offscreenCanvasRef.current.getContext('2d')
-
-        // Configure the Detector
-        detector.current.x = config.mixer.x * videoSize.ratio
-        detector.current.y = config.mixer.y * videoSize.ratio
-        detector.current.width = config.mixer.width * videoSize.ratio
-        detector.current.height = config.mixer.height * videoSize.ratio
-
-        // Sends a frame to the worker
-        const sendFrameToWorker = () => {
-            stats.current.begin()
-
-            // Convert the video frame to image data
-            offscreenCtxRef.current.drawImage(videoRef.current, 0, 0, videoSize.width, videoSize.height)
-
-            let imageData = offscreenCtxRef.current.getImageData(
-                config.crop.left * videoSize.ratio,
-                0,
-                videoSize.width - (config.crop.left + config.crop.right) * videoSize.ratio,
-                videoSize.height
-            )
-
-            // Pass to the worker
-            aiWorker.postMessage({
-                type: 'VIDEO_FRAME',
-                imageData: imageData
-            })
-        }
-
         // Listen to events from the worker
-        aiWorker.onmessage = function(e) {
-            // console.log('[aiLayer/Debug] Message from aiWorker', e)
-
-            switch(e.data.type) {
-                case 'MODEL_LOADED':
-                    sendFrameToWorker()
-                    break
-                case 'POSE_DETECTED':
-                    drawSkeleton(ctxRef.current, e.data.result, videoSize.width, videoSize.height, videoSize.ratio, config.crop.left)
-                    drawDebugElements(ctxRef.current)
-                    stats.current.end()
-
-                    // Do AI stuff
-                    aiDetectMixing(e.data.result.pose)
-
-                    // Next frame
-                    window.requestAnimationFrame(sendFrameToWorker)
-                    break
-            }
-        }
+        aiWorker.current.onmessage = handleWebWorkerMessage
     }
 
     // Detects mixing position
-    const aiDetectMixing = (pose) => {
+    const aiDetectMixing = (pose, ratio) => {
         // Analyze wrists position
         for (let i = 0; i < pose.keypoints.length; i++) {
             let point = pose.keypoints[i]
 
             if (point.part == 'leftWrist' || point.part == 'rightWrist') {
-                detector.current.capturePoint(point.part, point.position.x + config.crop.left * videoSize.ratio, point.position.y)
+                detector.current.capturePoint(point.part, point.position.x + config.crop.left * ratio, point.position.y)
             }
         }
 
         setMixingDetected(detector.current.pointsInBound() > 0)
     }
 
-    // Draw debug elements on the canvas
-    const drawDebugElements = (ctx) => {
+    // Draw algorithm debug elements on the canvas
+    const drawDebugElements = (ctx, size) => {
         // Margins
         ctx.fillStyle = 'rgba(0,0,0,0.2)'
-        ctx.fillRect(0, 0, config.crop.left * videoSize.ratio, videoSize.height)
-        ctx.fillRect(videoSize.width - config.crop.right * videoSize.ratio, 0, config.crop.right * videoSize.ratio, videoSize.height)
+        ctx.fillRect(0, 0, config.crop.left * size.ratio, size.height)
+        ctx.fillRect(size.width - config.crop.right * size.ratio, 0, config.crop.right * size.ratio, size.height)
 
         // Mixer bounds
         ctx.beginPath()
         ctx.strokeStyle = (detector.current.pointsInBound() > 0) ? config.mixer.strokeStyleActive : config.mixer.strokeStyle
         var mixerRect = {
-            x: config.mixer.x * videoSize.ratio,
-            y: config.mixer.y * videoSize.ratio,
-            width: config.mixer.width * videoSize.ratio,
-            height: config.mixer.height * videoSize.ratio
+            x: config.mixer.x * size.ratio,
+            y: config.mixer.y * size.ratio,
+            width: config.mixer.width * size.ratio,
+            height: config.mixer.height * size.ratio
         }
 
         // Draw the mixer bounds

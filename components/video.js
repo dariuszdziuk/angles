@@ -125,10 +125,12 @@ const Video = (props) => {
             // Start the position timer if primary
             if (props.isPrimary) {
                 currentTimeTimer.current = setInterval(() => {
-                    props.onCurrentTimeChange({
-                        currentTime: videoDom.current.currentTime,
-                        duration: videoDom.current.duration
-                    })
+                    if (videoDom.current) {
+                        props.onCurrentTimeChange({
+                            currentTime: videoDom.current.currentTime,
+                            duration: videoDom.current.duration
+                        })    
+                    }
                 }, 1000)
             }
         }

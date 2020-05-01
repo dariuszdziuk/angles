@@ -111,7 +111,7 @@ const ProgressBar = (props) => {
         <Box ref={progressBarRef} width='100%' onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove} sx={{
             // Layout
             position: 'absolute',
-            bottom: '56px',
+            bottom: '24px',
             height: '16px',
             paddingTop: '8px',
 
