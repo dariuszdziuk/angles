@@ -12,8 +12,8 @@ const config = {
         height: 1080
     },
     ai: {
-        detectMs: 1000, // Number of ms mixer position has to be detected for, to avoid accidentals
-        disableMs: 1500 // How long after stopping detection camera should be active
+        detectMs: (60/64*1000), // Number of ms mixer position has to be detected for, to avoid accidentals
+        disableMs: (60/32*1000) // How long after stopping detection camera should be active
     },
     crop: {
         left: 200,
@@ -24,9 +24,9 @@ const config = {
         opacity: 1
     },
     mixer: {
-        x: 800,
+        x: 825,
         y: 400,
-        width: 300,
+        width: 375,
         height: 400,
         strokeStyle: 'white',
         strokeStyleActive: 'red'
@@ -140,6 +140,16 @@ const AILayer = (props) => {
 
     }, [mixingDetected])
 
+    // Whether should be showing debug info or not
+    useEffect(() => {
+        if (props.isVisible) {
+            stats.current && document.body.appendChild(stats.current.dom)
+        }
+        else {
+            stats.current && document.body.removeChild(stats.current.dom)
+        }
+    }, [props.isVisible])
+
     // Common properties setup
     const commonInit = () => {
         // Create Canvas
@@ -148,7 +158,6 @@ const AILayer = (props) => {
         // Performance stats
         stats.current = new Stats()
         stats.current.showPanel(0)
-        document.body.appendChild(stats.current.dom)
     }
 
     // Updates the size of all elements 

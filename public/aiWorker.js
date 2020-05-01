@@ -4,16 +4,16 @@
 
 // Configuration
 const config = {
-    minConfidence: 0.35,
+    minConfidence: 0.25,
     resFactor: 0.4,
     posenet: {
         architecture: 'MobileNetV1',
         outputStride: 16,
-        multiplier: 0.5,
-        quantBytes: 2,
+        multiplier: 0.75,
+        quantBytes: 4,
         inputResolution: {
-            width: 480,
-            height: 255
+            width: 336,
+            height: 153
         }
     }
 }
