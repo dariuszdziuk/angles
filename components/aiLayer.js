@@ -208,15 +208,18 @@ const AILayer = (props) => {
 
     // Sends current frame to the AI worker
     const sendFrameToWorker = () => {
+        let size = videoSizeRef.current
+
+        // FPS tick
         stats.current.begin()
 
         // Convert the video frame to image data
-        offscreenCtxRef.current.drawImage(videoRef.current, 0, 0, videoSize.width, videoSize.height)
+        offscreenCtxRef.current.drawImage(videoRef.current, 0, 0, size.width, size.height)
         let imageData = offscreenCtxRef.current.getImageData(
-            config.crop.left * videoSize.ratio,
+            config.crop.left * size.ratio,
             0,
-            videoSize.width - (config.crop.left + config.crop.right) * videoSize.ratio,
-            videoSize.height
+            size.width - (config.crop.left + config.crop.right) * size.ratio,
+            size.height
         )
 
         // Pass to the worker
@@ -260,11 +263,7 @@ const AILayer = (props) => {
         // Create a Web Worker
         aiWorker.current = new Worker('/aiWorker.js')
         aiWorker.current.postMessage({
-            type: 'INITIALIZE',
-            config: {
-                width: videoSize.width - config.crop.left - config.crop.right,
-                height: videoSize.height
-            }
+            type: 'INITIALIZE'
         })
 
         // Listen to events from the worker
