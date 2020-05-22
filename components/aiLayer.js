@@ -239,7 +239,7 @@ const AILayer = (props) => {
         stats.current.end()
 
         // Do AI stuff
-        // aiDetectMixing(pose.pose, size.ratio)
+        aiDetectMixing(pose.pose, size.ratio)
     }
 
     // Handles a WebWorker message
