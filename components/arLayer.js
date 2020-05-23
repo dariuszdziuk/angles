@@ -26,6 +26,20 @@ const ARLayer = (props) => {
     // Playback state
     const [playbackInfo, setPlaybackInfo] = useState(props.playbackInfo)
 
+    // Metadata state
+    const [metadata, setMetadata] = useState({
+        left: {
+            isPlaying: true,
+            track: 'Saxony',
+            artist: 'Leon Vynehall',
+            year: '2016',
+            label: 'Running Back'
+        },
+        right: {
+            isPlaying: false
+        }
+    })
+
     // Listen to playback position changes
     useEffect(() => {
         setPlaybackInfo(props.playbackInfo)
@@ -42,59 +56,102 @@ const ARLayer = (props) => {
             </Box>
 
             {/* First callout */}
-            <Box sx={{
-                position: 'absolute',
-                right: '47vw',
-                top: '23vw',
-            }}>
-                {/* Callout arrow */}
-                <Box sx={{
-                    height: '32px',
-                    borderBottom: '1px solid #ffffff',
-                    marginRight: '32px'
-                }}>
-                    {/* Arrow */}
-                    <Box sx={{
-                        position: 'absolute',
-                        right: '16px',
-                        top: '-7px',
-                        width: '32px',
-                        height: '32px',
-                        borderBottom: '1px solid #ffffff',
-                        transform: 'rotate(-45deg)'
-                    }} />
-                </Box>
-
-                {/* Text */}
-                <Box sx={{
-                    width: 256
-                }}>
-                    <Box mt={3} sx={{
-                        fontSize: 3,
-                        fontWeight: 'bold',
-                        color: '#ffffff'
-                    }}>
-                        Saxony
-                    </Box>
-                    <Box sx={{
-                        fontSize: 2,
-                        color: '#ffffff'
-                    }}>
-                        Leon Vynehall SUPER LONG TITLE
-                    </Box>
-                    <Box mt={2} sx={{
-                        fontSize: 0,
-                        color: '#999999'
-                    }}>April 6, 2016</Box>
-                    <Box sx={{
-                        fontSize: 0,
-                        color: '#999999'
-                    }}>Running Back</Box>
-                </Box>
-            </Box>
+            <Callout
+                left={true}
+                track='Saxony'
+                artist='Leon Vynehall'
+                year='2016'
+                label='Rush Hour'
+            />
 
             {/* Second callout */}
-            <Box></Box>
+            <Callout
+                left={false}
+                track='new wave project 2 (call super mix)'
+                artist='Kuniyuki Takahashi'
+                year='2017'
+                label='Mule Musiq'
+            />
+        </Box>
+    )
+}
+
+// Callout component
+const Callout = (props) => {
+    return (
+        <Box sx={{
+            position: 'absolute',
+            right: props.left ? '47vw' : '',
+            left: props.left ? '' : '50vw',
+            top: props.left ? '23vw' : '',
+            bottom: props.left ? '' : '17.5vw'
+        }}>
+            {/* Left callout arrow */}
+            {props.left &&
+            <Box sx={{
+                height: '32px',
+                borderBottom: '1px solid #ffffff',
+                marginRight: '32px'
+            }}>
+                {/* Arrow */}
+                <Box sx={{
+                    position: 'absolute',
+                    right: '16px',
+                    top: '-7px',
+                    width: '32px',
+                    height: '32px',
+                    borderBottom: '1px solid #ffffff',
+                    transform: 'rotate(-45deg)'
+                }} />
+            </Box>
+            }
+
+            {/* Text */}
+            <Box sx={{
+                width: 192
+            }}>
+                <Box mt={3} sx={{
+                    fontSize: 3,
+                    fontWeight: 'bold',
+                    color: '#ffffff'
+                }}>
+                    {props.track}
+                </Box>
+                <Box sx={{
+                    fontSize: 2,
+                    color: '#ffffff'
+                }}>
+                    {props.artist}
+                </Box>
+                <Box mt={2} sx={{
+                    fontSize: 0,
+                    color: '#999999'
+                }}>{props.year}</Box>
+                <Box sx={{
+                    fontSize: 0,
+                    color: '#999999'
+                }}>{props.label}</Box>
+            </Box>
+
+            {/* Right callout arrow */}
+            {!props.left &&
+            <Box mt={-2} sx={{
+                height: '32px',
+                borderBottom: '1px solid #ffffff',
+                marginRight: '32px'
+            }}>
+                {/* Arrow */}
+                <Box sx={{
+                    position: 'absolute',
+                    left: '-38px',
+                    bottom: '-16px',
+                    width: '32px',
+                    height: '32px',
+                    borderBottom: '1px solid #ffffff',
+                    transform: 'rotate(-45deg)'
+                }} />
+            </Box>
+            }
         </Box>
     )
 }
