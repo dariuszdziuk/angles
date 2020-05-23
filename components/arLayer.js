@@ -6,6 +6,9 @@ import {
     Box
 } from 'rebass'
 
+// Source
+import allTracksMetadata from '../source/metadata'
+
 // Styles
 const styles = {
     shared: {
@@ -28,21 +31,52 @@ const ARLayer = (props) => {
 
     // Metadata state
     const [metadata, setMetadata] = useState({
-        left: {
-            isPlaying: true,
-            track: 'Saxony',
-            artist: 'Leon Vynehall',
-            year: '2016',
-            label: 'Running Back'
-        },
-        right: {
-            isPlaying: false
-        }
+        left: { isPlaying: false },
+        right: { isPlaying: false }
     })
 
     // Listen to playback position changes
     useEffect(() => {
         setPlaybackInfo(props.playbackInfo)
+        let seconds = props.playbackInfo.currentTime
+
+        // Assume tracks not found
+        let newMetadata = {
+            left: {
+                isPlaying: false
+            },
+            right: {
+                isPlaying: false
+            }
+        }
+
+        // Find currently played track in the left turntable
+        for (const track of allTracksMetadata.left) {
+            if (seconds >= track.start && seconds <= track.end) {
+                newMetadata.left = {
+                    isPlaying: true,
+                    track: track.track,
+                    artist: track.artist,
+                    year: track.year,
+                    label: track.label
+                }
+            }
+        }
+
+        for (const track of allTracksMetadata.right) {
+            if (seconds >= track.start && seconds <= track.end) {
+                newMetadata.right = {
+                    isPlaying: true,
+                    track: track.track,
+                    artist: track.artist,
+                    year: track.year,
+                    label: track.label
+                }
+            }
+        }
+
+        setMetadata(newMetadata)
+
     }, [props.playbackInfo])
 
     // Visual component
@@ -50,7 +84,8 @@ const ARLayer = (props) => {
         <Box sx={styles.shared}>
             {/* Debug info */}
             <Box sx={{
-                background: 'pink'
+                background: 'pink',
+                visibility: 'hidden'
             }}>
                 Debug info: {playbackInfo.currentTime}
             </Box>
@@ -58,19 +93,21 @@ const ARLayer = (props) => {
             {/* First callout */}
             <Callout
                 left={true}
-                track='Saxony'
-                artist='Leon Vynehall'
-                year='2016'
-                label='Rush Hour'
+                visible={metadata.left.isPlaying}
+                track={metadata.left.track}
+                artist={metadata.left.artist}
+                year={metadata.left.year}
+                label={metadata.left.label}
             />
 
             {/* Second callout */}
             <Callout
                 left={false}
-                track='new wave project 2 (call super mix)'
-                artist='Kuniyuki Takahashi'
-                year='2017'
-                label='Mule Musiq'
+                visible={metadata.right.isPlaying}
+                track={metadata.right.track}
+                artist={metadata.right.artist}
+                year={metadata.right.year}
+                label={metadata.right.label}
             />
         </Box>
     )
@@ -84,7 +121,9 @@ const Callout = (props) => {
             right: props.left ? '47vw' : '',
             left: props.left ? '' : '50vw',
             top: props.left ? '23vw' : '',
-            bottom: props.left ? '' : '17.5vw'
+            bottom: props.left ? '' : '17vw',
+            opacity: props.visible ? 1.0 : 0.0,
+            transition: 'opacity 2s ease'
         }}>
             {/* Left callout arrow */}
             {props.left &&
