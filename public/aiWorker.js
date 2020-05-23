@@ -47,19 +47,6 @@ self.addEventListener('message', e => {
         case 'VIDEO_FRAME':
             // Analyze the pose
             net.estimateSinglePose(e.data.imageData).then(pose => {
-            // net.estimateMultiplePoses(e.data.imageData, {
-            //     maxDetections: 1,
-            //     scoreThreshold: config.minConfidence
-            // }).then(poses => {
-                // console.log('[aiWorker/Debug] Posenet pose detected', poses)
-
-                // Sometimes the result is empty
-                // if (!poses || poses.length == 0) {
-                    // return
-                // }
-
-                // let pose = poses[0]
-
                 // Create the result including the skeleton
                 let result = {
                     pose: pose,

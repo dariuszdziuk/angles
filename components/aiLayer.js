@@ -39,7 +39,14 @@ const config = {
 const AILayer = (props) => {
 
     // Active state
-    const [isActive, setIsActive] = useState(props.isActive)
+    const [isActive, _setIsActive] = useState(props.isActive)
+    const isActiveRef = useRef(isActive)
+
+    // In place of original setIsActive (workaround from workaround from https://stackoverflow.com/questions/55265255/react-usestate-hook-event-handler-using-initial-state))
+    const setIsActive = (isActive) => {
+        isActiveRef.current = isActive
+        _setIsActive(isActive)
+    }
 
     // Mixer pose detected
     const [mixingDetected, setMixingDetected] = useState(false)
@@ -86,8 +93,6 @@ const AILayer = (props) => {
 
     // Listen to active prop change
     useEffect(() => {
-        setIsActive(props.isActive)
-
         // Activate for first time
         if (!videoRef.current && props.isActive) {
             // Request access to the DOM object
@@ -95,31 +100,24 @@ const AILayer = (props) => {
 
             // Update dimensions
             updateSize()
+
+            // Setup the Canvas & AI
+            commonInit()
+            enableWebWorkerAI()
         }
+
+        setIsActive(props.isActive)
     }, [props.isActive])
 
     // Listen to activity change
     useEffect(() => {
-        // First time activation
         if (isActive) {
-            // Common setup
-            commonInit()
-            enableWebWorkerAI()
-
-            // TODO - don't init it already was created
-        }
-        // AI was already created
-        else if (isActive) {
-            // Start analyzing frames
-            // WARNING - Assuming PoseNet was loaded already, might not work if it wasn't yet
-            // analyzeFrame()
+            requestNextFrame()
         }
     }, [isActive])
 
     // Mixing detected change - note: will be only triggered when changed
     useEffect(() => {
-        console.log('[AiLayer] Mixing detected change', mixingDetected)
-
         if (mixingDetected) {
             detectTimer.current = setTimeout(() => {
                 // Long enough in the mixing zone - send info to parent
@@ -197,8 +195,6 @@ const AILayer = (props) => {
             ratio: ratio
         })
 
-        console.log('updating size to', videoSize)
-
         // Update the detector dimensions
         detector.current.x = config.mixer.x * ratio
         detector.current.y = config.mixer.y * ratio
@@ -242,18 +238,26 @@ const AILayer = (props) => {
         aiDetectMixing(pose.pose, size.ratio)
     }
 
+    // Requests the next frame to analyse
+    const requestNextFrame = () => {
+        if (isActiveRef.current) {
+            window.requestAnimationFrame(sendFrameToWorker)
+        }
+    }
+
     // Handles a WebWorker message
     const handleWebWorkerMessage = (e) => {
         // console.log('[aiLayer/Debug] Message from aiWorker', e)
         switch(e.data.type) {
             case 'MODEL_LOADED':
-                sendFrameToWorker()
+                requestNextFrame()
                 break
+
             case 'POSE_DETECTED':
                 handleAIPose(e.data.result)
 
                 // Request analysis of the next frame
-                window.requestAnimationFrame(sendFrameToWorker)
+                requestNextFrame()
                 break
         }
     }
