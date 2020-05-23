@@ -17,6 +17,9 @@ const theme = {
     fontSizes: [
         12, 14, 16, 20, 24
     ],
+    lineHeights: {
+        body: 1.5
+    },
     styles: {
         root: {
             fontFamily: 'body',

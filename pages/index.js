@@ -6,6 +6,7 @@ import Head from 'next/head'
 import Layout from '../components/layout'
 import Nav from '../components/nav'
 import Video from '../components/video'
+import ARLayer from '../components/arLayer'
 import ProgressBar from '../components/progressBar'
 import { cameras } from '../source/camera'
 
@@ -87,6 +88,9 @@ const Experience = () => {
                 // Videos section
                 videos={
                     <Box>
+                        <ARLayer
+                            playbackInfo={playbackInfo}
+                        />
                         <Video
                             mousePosition={mousePosition}
                             moveToTimeSignal={moveToTimeSignal}
@@ -98,7 +102,7 @@ const Experience = () => {
                             activeCamera={activeCamera}
                             aiMixingDetected={aiMixingDetected}
                             showAlgorithm={showAlgorithm}
-                            src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix+-+Camera+1+Full+Length+720p.mp4'
+                            src='https://dariuszdziuk.ams3.cdn.digitaloceanspaces.com/Angles%20First%20Mix%20-%20Camera%201%20Full%20Length%20720p.mp4'
                         />
                         <Video
                             mousePosition={mousePosition}
@@ -108,7 +112,7 @@ const Experience = () => {
                             activeCamera={activeCamera}
                             aiMixingDetected={aiMixingDetected}
                             showAlgorithm={showAlgorithm}
-                            src='http://d2z9la3znewur2.cloudfront.net/videos/Angles+First+Mix+-+Camera+2+Full+Length+720p.mp4'
+                            src='https://dariuszdziuk.ams3.cdn.digitaloceanspaces.com/Angles%20First%20Mix%20-%20Camera%202%20Full%20Length%20720p%20%E2%80%94%20Fixed.mp4'
                         />
                     </Box>
                 }
