@@ -1,5 +1,5 @@
 // React
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 // Rebass
 import {
@@ -9,6 +9,12 @@ import {
 // Source
 import allTracksMetadata from '../source/metadata'
 
+// Config
+const config = {
+    hoverAutoHideMs: 2000,
+    hoverTransitionMs: 1000
+}
+
 // Styles
 const styles = {
     shared: {
@@ -17,7 +23,8 @@ const styles = {
         height: '37.6vw', // 1080
         background: 'rgba(0,0,0,0.5)',
         pointerEvents: 'none',
-        zIndex: 2
+        zIndex: 2,
+        transition: 'opacity ' + config.hoverTransitionMs + 'ms ease'
     }
 }
 
@@ -29,11 +36,41 @@ const ARLayer = (props) => {
     // Playback state
     const [playbackInfo, setPlaybackInfo] = useState(props.playbackInfo)
 
+    // Showing the overlay state
+    const [isShowing, setIsShowing] = useState(false)
+
     // Metadata state
     const [metadata, setMetadata] = useState({
         left: { isPlaying: false },
         right: { isPlaying: false }
     })
+
+    // Overlay DOM object
+    const overlayElement = useRef()
+
+    // Overlay auto hide timer
+    const overlayAutoHideTimer = useRef(null)
+
+    // Listen to mouse position changes
+    useEffect(() => {
+        const rect = overlayElement.current.getBoundingClientRect()
+
+        const x = props.mousePosition.x
+        const y = props.mousePosition.y
+
+        const isHovering = (x >= rect.left) && (x <= rect.right) && (y >= rect.top) && (y <= rect.bottom)
+
+        // Show the AR layer
+        if (isHovering) {
+            setIsShowing(true)
+
+            // Start the auto hide timer
+            clearTimeout(overlayAutoHideTimer.current)
+            overlayAutoHideTimer.current = setTimeout(() => {
+                setIsShowing(false)
+            }, config.hoverAutoHideMs)
+        }
+    }, [props.mousePosition])
 
     // Listen to playback position changes
     useEffect(() => {
@@ -81,8 +118,9 @@ const ARLayer = (props) => {
 
     // Visual component
     return (
-        <Box sx={{...styles.shared, 
-            visibility: props.visible ? 'visible' : 'hidden'
+        <Box ref={overlayElement} sx={{...styles.shared, 
+            visibility: props.visible ? 'visible' : 'hidden',
+            opacity: isShowing ? 1.0 : 0.0
         }}>
             {/* Debug info */}
             <Box sx={{

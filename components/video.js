@@ -156,6 +156,7 @@ const Video = (props) => {
 
         let style = {...styles.shared, ...styleSource[activeCamera], ...{
             transform: config.tracking ? transformationParams() : '',
+            cursor: props.isPlaying ? 'auto' : 'pointer'
         }}
 
         // Opacity handling for mixing mode
