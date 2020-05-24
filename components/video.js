@@ -14,7 +14,7 @@ const config = {
         pointX: 0.5,
         pointY: 0.125
     },
-    animate: true,
+    animate: false,
     tracking: false,
     duration: 0.35
 }

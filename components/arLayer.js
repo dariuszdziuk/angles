@@ -81,7 +81,9 @@ const ARLayer = (props) => {
 
     // Visual component
     return (
-        <Box sx={styles.shared}>
+        <Box sx={{...styles.shared, 
+            visibility: props.visible ? 'visible' : 'hidden'
+        }}>
             {/* Debug info */}
             <Box sx={{
                 background: 'pink',
@@ -93,6 +95,7 @@ const ARLayer = (props) => {
             {/* First callout */}
             <Callout
                 left={true}
+                frontCamera={props.showingFrontCamera}
                 visible={metadata.left.isPlaying}
                 track={metadata.left.track}
                 artist={metadata.left.artist}
@@ -103,6 +106,7 @@ const ARLayer = (props) => {
             {/* Second callout */}
             <Callout
                 left={false}
+                frontCamera={props.showingFrontCamera}
                 visible={metadata.right.isPlaying}
                 track={metadata.right.track}
                 artist={metadata.right.artist}
@@ -113,15 +117,41 @@ const ARLayer = (props) => {
     )
 }
 
+// Layout permutations
+const layoutStyle = {
+    leftTurntable: {
+        front: {
+            right: '47vw',
+            top: '23vw'    
+        },
+        top: {
+            right: '40vw',
+            top: '5vw'     
+        }
+    },
+    rightTurntable: {
+        front: {
+            left: '50vw',
+            bottom: '17vw'    
+        },
+        top: {
+            left: '53vw',
+            bottom: '14vw'    
+        }
+    }
+}
+
 // Callout component
 const Callout = (props) => {
+
+    // Assemble the CSS style
+    const camera = props.frontCamera ? 'front' : 'top'
+    const style = props.left ? layoutStyle.leftTurntable[camera] : layoutStyle.rightTurntable[camera]
+
     return (
         <Box sx={{
+            ...style,
             position: 'absolute',
-            right: props.left ? '47vw' : '',
-            left: props.left ? '' : '50vw',
-            top: props.left ? '23vw' : '',
-            bottom: props.left ? '' : '17vw',
             opacity: props.visible ? 1.0 : 0.0,
             transition: 'opacity 2s ease'
         }}>
@@ -135,24 +165,27 @@ const Callout = (props) => {
                 {/* Arrow */}
                 <Box sx={{
                     position: 'absolute',
-                    right: '16px',
+                    right: props.frontCamera ? '16px' : '',
+                    left: !props.frontCamera ? '-16px' : '',
                     top: '-7px',
                     width: '32px',
                     height: '32px',
                     borderBottom: '1px solid #ffffff',
-                    transform: 'rotate(-45deg)'
+                    transform: props.frontCamera ? 'rotate(-45deg)' : 'rotate(45deg)'
                 }} />
             </Box>
             }
 
             {/* Text */}
             <Box sx={{
-                width: 192
+                width: 192,
+                paddingLeft: !props.frontCamera ? '32px' : '' 
             }}>
                 <Box mt={3} sx={{
                     fontSize: 3,
                     fontWeight: 'bold',
-                    color: '#ffffff'
+                    color: '#ffffff',
+                    whiteSpace: 'nowrap'
                 }}>
                     {props.track}
                 </Box>

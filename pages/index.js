@@ -90,6 +90,11 @@ const Experience = () => {
                     <Box>
                         <ARLayer
                             playbackInfo={playbackInfo}
+                            visible={activeCamera != cameras.both}
+                            showingFrontCamera={
+                                (activeCamera == cameras.front) ||
+                                ((activeCamera == cameras.ai) && !aiMixingDetected)
+                            }
                         />
                         <Video
                             mousePosition={mousePosition}
