@@ -11,7 +11,7 @@ import allTracksMetadata from '../source/metadata'
 
 // Config
 const config = {
-    hoverAutoHideMs: 2000,
+    hoverAutoHideMs: 5000,
     hoverTransitionMs: 1000
 }
 
@@ -69,6 +69,11 @@ const ARLayer = (props) => {
             overlayAutoHideTimer.current = setTimeout(() => {
                 setIsShowing(false)
             }, config.hoverAutoHideMs)
+        }
+        // Hide the AR layer
+        else {
+            clearTimeout(overlayAutoHideTimer.current)
+            setIsShowing(false)
         }
     }, [props.mousePosition])
 

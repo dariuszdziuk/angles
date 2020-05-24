@@ -7,7 +7,8 @@ import { cameras } from '../source/camera'
 // Rebase
 import {
     Flex,
-    Box
+    Box,
+    Link
 } from 'rebass'
 
 /**
@@ -47,8 +48,10 @@ const Nav = (props) => {
                 }}> —  show algorithm [{showAlgorithm ? 'on' : 'off'}]</Box>
             </Flex>
             <Flex fontSize={2} mt={4} ml={'auto'}>
-                <Box variant='styles.clickable' mr={4}>setlist</Box>
-                <Box variant='styles.clickable'>about</Box>
+                <Box variant='styles.clickable'><Link href='https://github.com/dariuszdziuk/angles' target='_blank' sx={{
+                    color: 'black',
+                    textDecoration: 'none'
+                }}>github</Link></Box>
             </Flex>
         </Flex>
     )
